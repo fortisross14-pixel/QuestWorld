@@ -1,0 +1,2325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0a0805">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tournament">
+<link rel="manifest" href="manifest.json">
+<title>Tournament of Champions</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0805;--bg2:#12100c;--bg3:#1a1710;--bg4:#221f14;
+  --gold:#c9a84c;--gold2:#f0d080;--gold3:#8a6a20;
+  --red:#c0392b;--red2:#e74c3c;
+  --txt:#e8dcc8;--txt2:#a09070;--txt3:#6a5a40;
+  --common:#888;--uncommon:#4caf50;--rare:#2196f3;
+  --epic:#9c27b0;--legendary:#ff9800;
+  --R:10px;--r:6px;
+  --viking:#4a7db5;--conq:#b54a4a;--french:#b5934a;
+  --sahel:#4ab57d;--arabic:#b5a44a;--samurai:#b54a8a;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Crimson Text',serif;
+  background:var(--bg);color:var(--txt);
+  display:flex;flex-direction:column;
+  background-image:
+    radial-gradient(ellipse at 20% 0%,rgba(201,168,76,0.06) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 100%,rgba(192,57,43,0.06) 0%,transparent 60%);
+}
+
+/* ── NAV ───────────────────────────────────────────────── */
+.nav{
+  background:var(--bg2);border-bottom:1px solid var(--gold3);
+  padding:0 12px;display:flex;align-items:stretch;
+  flex-shrink:0;overflow-x:auto;gap:2px;
+}
+.nav-tab{
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.05em;
+  color:var(--txt3);padding:12px 10px;border:none;background:none;
+  cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;
+  transition:all .2s;
+}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.nav-tab:hover:not(.active){color:var(--txt2)}
+
+/* ── HEADER ────────────────────────────────────────────── */
+.header{
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  border-bottom:1px solid var(--gold3);
+  padding:10px 16px;display:flex;align-items:center;
+  gap:12px;flex-shrink:0;
+}
+.header-title{font-family:'Cinzel',serif;font-size:18px;color:var(--gold);font-weight:900;letter-spacing:.1em}
+.header-sub{font-size:13px;color:var(--txt2);font-style:italic}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.year-badge{font-family:'Cinzel',serif;font-size:13px;background:var(--bg4);color:var(--gold2);padding:5px 12px;border-radius:var(--r);border:1px solid var(--gold3)}
+
+/* ── PANELS ────────────────────────────────────────────── */
+.panels{flex:1;overflow:hidden;position:relative}
+.panel{position:absolute;inset:0;overflow-y:auto;padding:12px;display:none}
+.panel.active{display:block}
+
+/* ── COMMON ────────────────────────────────────────────── */
+.sec{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;color:var(--gold3);margin:14px 0 6px;text-transform:uppercase}
+.btn{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.05em;border:1px solid var(--gold3);background:var(--bg3);color:var(--gold);padding:8px 16px;border-radius:var(--r);cursor:pointer;transition:all .2s}
+.btn:hover{background:var(--bg4);border-color:var(--gold)}
+.btn-gold{background:var(--gold3);border-color:var(--gold);color:var(--bg)}
+.btn-gold:hover{background:var(--gold)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-red{border-color:var(--red);color:var(--red2)}
+.badge{font-size:10px;padding:2px 7px;border-radius:20px;font-family:'Cinzel',serif;font-weight:700;letter-spacing:.05em}
+.badge-common{background:#333;color:var(--common)}
+.badge-uncommon{background:#1a3a1a;color:var(--uncommon)}
+.badge-rare{background:#0d1e3a;color:var(--rare)}
+.badge-epic{background:#2a1a3a;color:var(--epic)}
+.badge-legendary{background:#3a2000;color:var(--legendary)}
+.card{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--R);padding:12px;margin-bottom:8px}
+.card:hover{border-color:var(--gold3)}
+.row{display:flex;align-items:center;gap:8px}
+.spacer{flex:1}
+.empty{color:var(--txt3);font-style:italic;padding:20px;text-align:center}
+.tag{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg3);border:1px solid var(--bg4);color:var(--txt2);font-family:'Cinzel',serif}
+.region-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── STATS BAR ──────────────────────────────────────────── */
+.stat-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.stat-lbl{font-size:11px;color:var(--txt3);width:90px;flex-shrink:0;font-family:'Cinzel',serif;font-size:10px;letter-spacing:.03em}
+.stat-bar-wrap{flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.stat-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold3),var(--gold))}
+.stat-val{font-size:12px;color:var(--txt2);width:28px;text-align:right;font-family:'Cinzel',serif}
+
+/* ── HERO CARD ──────────────────────────────────────────── */
+.hero-card{
+  background:var(--bg2);border-radius:var(--R);padding:10px 12px;
+  margin-bottom:6px;cursor:pointer;transition:all .2s;
+  border:1px solid var(--bg4);position:relative;overflow:hidden;
+}
+.hero-card:hover{border-color:var(--gold3);background:var(--bg3)}
+.hero-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.hero-card.common::before{background:var(--common)}
+.hero-card.uncommon::before{background:var(--uncommon)}
+.hero-card.rare::before{background:var(--rare)}
+.hero-card.epic::before{background:var(--epic)}
+.hero-card.legendary::before{background:var(--legendary)}
+.hero-name{font-family:'Cinzel',serif;font-size:14px;color:var(--gold2);font-weight:700}
+.hero-meta{font-size:12px;color:var(--txt2);font-style:italic}
+.hero-fame{font-family:'Cinzel',serif;font-size:12px}
+.fame-common{color:var(--common)}
+.fame-uncommon{color:var(--uncommon)}
+.fame-rare{color:var(--rare)}
+.fame-epic{color:var(--epic)}
+.fame-legendary{color:var(--legendary)}
+
+/* ── BRACKET ────────────────────────────────────────────── */
+.bracket-wrap{overflow-x:auto}
+.bracket-rounds{display:flex;gap:16px;padding:8px 0;min-width:max-content}
+.bracket-round-col{display:flex;flex-direction:column;gap:8px;min-width:160px}
+.bracket-round-title{font-family:'Cinzel',serif;font-size:11px;color:var(--gold3);letter-spacing:.1em;text-align:center;margin-bottom:4px}
+.bracket-match{background:var(--bg3);border:1px solid var(--bg4);border-radius:var(--r);overflow:hidden}
+.bracket-fighter{padding:6px 10px;font-size:12px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--bg4)}
+.bracket-fighter:last-child{border-bottom:none}
+.bracket-fighter.winner{background:rgba(201,168,76,0.1);color:var(--gold2);font-weight:600}
+.bracket-fighter.loser{opacity:.45}
+.bracket-fighter.tbd{color:var(--txt3);font-style:italic}
+
+/* ── COMBAT ─────────────────────────────────────────────── */
+.combat-arena{
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  border:1px solid var(--gold3);border-radius:var(--R);
+  padding:16px;margin-bottom:12px;
+}
+.fighters-display{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start;margin-bottom:16px}
+.fighter-side{display:flex;flex-direction:column;gap:6px}
+.fighter-side.right{text-align:right;align-items:flex-end}
+.fighter-name-big{font-family:'Cinzel',serif;font-size:16px;color:var(--gold2);font-weight:700}
+.fighter-class-tag{font-size:11px;color:var(--txt2);font-style:italic}
+.hp-bar-wrap{width:100%;height:10px;background:var(--bg4);border-radius:5px;overflow:hidden}
+.hp-bar{height:100%;border-radius:5px;transition:width .4s ease;background:linear-gradient(90deg,var(--red),var(--red2))}
+.hp-bar.right{margin-left:auto}
+.hp-text{font-family:'Cinzel',serif;font-size:11px;color:var(--txt2)}
+.vs-divider{font-family:'Cinzel',serif;font-size:24px;color:var(--gold3);text-align:center;padding-top:20px}
+.combat-log{
+  background:var(--bg);border:1px solid var(--bg4);border-radius:var(--r);
+  max-height:220px;overflow-y:auto;padding:10px;font-size:13px;
+  font-style:italic;line-height:1.7;
+}
+.log-line{padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.log-line.hit{color:var(--red2)}
+.log-line.miss{color:var(--txt3)}
+.log-line.special{color:var(--legendary)}
+.log-line.death{color:var(--red);font-weight:600;font-style:normal;font-family:'Cinzel',serif}
+.log-line.system{color:var(--gold);font-style:normal;font-family:'Cinzel',serif}
+.stamina-bar-wrap{width:100%;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:3px}
+.stamina-bar{height:100%;background:linear-gradient(90deg,#2196f3,#64b5f6);transition:width .3s}
+
+/* ── QUEST SCREEN ────────────────────────────────────────── */
+.quest-card{
+  background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--R);
+  padding:16px;margin-bottom:10px;
+}
+.quest-title{font-family:'Cinzel',serif;font-size:16px;color:var(--gold2);margin-bottom:4px}
+.quest-region{font-size:12px;color:var(--txt2);font-style:italic;margin-bottom:10px}
+.quest-stars{color:var(--legendary);font-size:16px;letter-spacing:2px}
+.success-bar{height:8px;border-radius:4px;background:var(--bg4);overflow:hidden;margin:8px 0}
+.success-fill{height:100%;border-radius:4px;transition:width .5s;background:linear-gradient(90deg,var(--red2),var(--uncommon))}
+.outcome-banner{
+  font-family:'Cinzel',serif;font-size:18px;text-align:center;
+  padding:12px;border-radius:var(--r);margin-top:10px;
+}
+.outcome-banner.success{background:rgba(76,175,80,0.15);color:var(--uncommon);border:1px solid var(--uncommon)}
+.outcome-banner.failure{background:rgba(192,57,43,0.15);color:var(--red2);border:1px solid var(--red)}
+
+/* ── TRAINING TABLE ─────────────────────────────────────── */
+table.training-table{width:100%;border-collapse:collapse;font-size:12px}
+table.training-table th{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.07em;color:var(--gold3);padding:6px 8px;border-bottom:1px solid var(--bg4);text-align:left}
+table.training-table td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.03)}
+table.training-table tr:hover td{background:var(--bg3)}
+.star-gold{color:var(--gold);font-size:11px}
+.plus-green{color:var(--uncommon);font-family:'Cinzel',serif;font-size:11px}
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  z-index:100;display:flex;align-items:center;justify-content:center;
+  padding:16px;display:none;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--bg2);border:1px solid var(--gold3);
+  border-radius:var(--R);width:100%;max-width:460px;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-header{
+  padding:16px 20px;border-bottom:1px solid var(--bg4);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--bg2);z-index:1;
+}
+.modal-title{font-family:'Cinzel',serif;font-size:16px;color:var(--gold2);font-weight:700}
+.modal-body{padding:16px 20px}
+.close-btn{background:none;border:none;color:var(--txt3);font-size:20px;cursor:pointer}
+
+/* ── REGION COLORS ───────────────────────────────────────── */
+.reg-conq{color:var(--conq)}
+.reg-french{color:var(--french)}
+.reg-viking{color:var(--viking)}
+.reg-sahel{color:var(--sahel)}
+.reg-arabic{color:var(--arabic)}
+.reg-samurai{color:var(--samurai)}
+.dot-conq{background:var(--conq)}
+.dot-french{background:var(--french)}
+.dot-viking{background:var(--viking)}
+.dot-sahel{background:var(--sahel)}
+.dot-arabic{background:var(--arabic)}
+.dot-samurai{background:var(--samurai)}
+
+/* ── HERO DETAIL ─────────────────────────────────────────── */
+.artifact-slot{
+  background:var(--bg3);border:1px dashed var(--bg4);border-radius:var(--r);
+  padding:10px;text-align:center;color:var(--txt3);font-style:italic;font-size:13px;
+}
+.skill-slot{
+  background:var(--bg3);border:1px dashed var(--bg4);border-radius:var(--r);
+  padding:8px 10px;color:var(--txt3);font-style:italic;font-size:12px;
+  margin-bottom:4px;
+}
+
+/* ── PHASE STEPS ─────────────────────────────────────────── */
+.phase-step{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r);
+  margin-bottom:6px;cursor:pointer;transition:all .2s;
+}
+.phase-step:hover{border-color:var(--gold3)}
+.phase-step.done{border-color:var(--gold3);opacity:.7}
+.phase-step.active-step{border-color:var(--gold);background:var(--bg3)}
+.phase-step.locked{opacity:.35;cursor:default}
+.step-num{
+  font-family:'Cinzel',serif;font-size:14px;font-weight:900;
+  width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--bg4);color:var(--txt3);flex-shrink:0;font-size:11px;
+}
+.phase-step.done .step-num{background:var(--gold3);color:var(--bg)}
+.phase-step.active-step .step-num{background:var(--gold);color:var(--bg)}
+.step-title{font-family:'Cinzel',serif;font-size:13px;color:var(--txt2)}
+.phase-step.active-step .step-title{color:var(--gold2)}
+.step-sub{font-size:12px;color:var(--txt3);font-style:italic}
+
+.settings-item{padding:10px 16px;font-size:13px;color:var(--txt2);cursor:pointer;font-family:'Crimson Text',serif}
+.settings-item:hover{background:var(--bg3);color:var(--gold)}
+.settings-divider{height:1px;background:var(--bg4);margin:4px 0}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">⚔ TOURNAMENT OF CHAMPIONS</div>
+    <div class="header-sub" id="header-sub">The Grand Promoter's Chronicle</div>
+  </div>
+  <div class="header-right">
+    <div class="year-badge">Year <span id="cur-year">1</span></div>
+    <button class="btn btn-sm btn-gold" id="btn-advance" onclick="advancePhase()">▶ Begin Year 1</button>
+    <span id="last-saved" style="font-size:10px;color:var(--txt3)"></span>
+    <button class="btn btn-sm" onclick="openSettings()" style="background:var(--bg3);border-color:var(--txt3);color:var(--txt2)">⚙</button>
+  </div>
+</div>
+
+<!-- CUSTOM CONFIRM DIALOG -->
+<div id="confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg2);border:1px solid var(--gold3);border-radius:var(--R);width:100%;max-width:320px;padding:24px 20px;text-align:center">
+    <div style="font-size:28px;margin-bottom:12px" id="confirm-icon">⚠️</div>
+    <div style="font-family:'Cinzel',serif;font-size:15px;color:var(--gold2);margin-bottom:8px" id="confirm-title">Are you sure?</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:20px;line-height:1.5" id="confirm-msg"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn" style="flex:1;border-color:var(--txt3);color:var(--txt2)" onclick="confirmCancel()">Cancel</button>
+      <button class="btn btn-gold" style="flex:1" id="confirm-ok-btn" onclick="confirmOk()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settings-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-start;justify-content:flex-end;padding:56px 12px 0" onclick="if(event.target===this)closeSettings()">
+  <div style="background:var(--bg2);border:1px solid var(--gold3);border-radius:var(--R);width:220px;padding:4px 0;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+    <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold3);letter-spacing:.1em;padding:10px 16px 6px">SETTINGS</div>
+    <div class="settings-item" onclick="restartYear()">🔄 Restart Current Year</div>
+    <div class="settings-item" onclick="clearAndReset()" style="color:var(--red2)">💀 Reset World</div>
+    <div class="settings-divider"></div>
+    <div class="settings-item" onclick="closeSettings()">✕ Close</div>
+  </div>
+</div>
+
+<div class="nav" id="main-nav">
+  <button class="nav-tab active" onclick="switchTab('current')">⚔ Current Year</button>
+  <button class="nav-tab" onclick="switchTab('warriors')">🗡 Heroes</button>
+  <button class="nav-tab" onclick="switchTab('regions')">🌍 Regions</button>
+  <button class="nav-tab" onclick="switchTab('history')">📜 History</button>
+</div>
+
+<div class="panels">
+
+  <!-- CURRENT YEAR -->
+  <div class="panel active" id="panel-current">
+    <div class="sec">ANNUAL CALENDAR — YEAR <span id="phase-year">1</span></div>
+    <div id="phase-steps"></div>
+    <div id="phase-content" style="margin-top:12px"></div>
+  </div>
+
+  <!-- WARRIORS -->
+  <div class="panel" id="panel-warriors">
+    <div class="row" style="margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="sec" style="margin:0">ALL HEROES</div>
+      <div class="spacer"></div>
+      <select id="warriors-sort" onchange="renderWarriors()" style="background:var(--bg3);color:var(--txt2);border:1px solid var(--bg4);border-radius:var(--r);padding:4px 8px;font-size:12px;font-family:'Cinzel',serif">
+        <option value="fame">By Fame</option>
+        <option value="level">By Level</option>
+        <option value="ovr">By Overall</option>
+        <option value="age">By Age</option>
+      </select>
+      <select id="warriors-status" onchange="renderWarriors()" style="background:var(--bg3);color:var(--txt2);border:1px solid var(--bg4);border-radius:var(--r);padding:4px 8px;font-size:12px;font-family:'Cinzel',serif">
+        <option value="active">Active</option>
+        <option value="inactive">Retired / Fallen</option>
+        <option value="all">All</option>
+      </select>
+      <select id="warriors-filter" onchange="renderWarriors()" style="background:var(--bg3);color:var(--txt2);border:1px solid var(--bg4);border-radius:var(--r);padding:4px 8px;font-size:12px;font-family:'Cinzel',serif">
+        <option value="all">All Regions</option>
+        <option value="conq">Las Tierras de Conquista</option>
+        <option value="french">Le Royaume des Preux</option>
+        <option value="viking">Midgard</option>
+        <option value="sahel">Les Royaumes du Sahel</option>
+        <option value="arabic">Bilad al-Fursan</option>
+        <option value="samurai">武の国</option>
+      </select>
+    </div>
+    <div id="warriors-list"></div>
+  </div>
+
+  <!-- REGIONS -->
+  <div class="panel" id="panel-regions">
+    <div id="regions-content"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="panel" id="panel-history">
+    <div class="row" style="gap:6px;margin-bottom:10px">
+      <button class="btn btn-sm active" id="hsub-tourn" onclick="switchHistSub('tourn')">⚔ Tournaments</button>
+      <button class="btn btn-sm" id="hsub-quests" onclick="switchHistSub('quests')">🐉 Quests</button>
+      <button class="btn btn-sm" id="hsub-heroes" onclick="switchHistSub('heroes')">🗡 Heroes</button>
+    </div>
+    <div id="hist-tourn"><div class="empty">No tournaments yet</div></div>
+    <div id="hist-quests" style="display:none"><div class="empty">No quests yet</div></div>
+    <div id="hist-heroes" style="display:none"><div class="empty">Select a hero to view their career</div></div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Hero</div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const REGIONS={
+  conq:{id:"conq",name:"Las Tierras de Conquista",short:"Conquista",cls:"reg-conq",dot:"dot-conq",
+    desc:"Warriors of steel and gunpowder, forged in the heat of conquest",
+    firstNames:["Hernán","Diego","Francisco","Pedro","Gonzalo","Álvaro","Rodrigo","Cristóbal","Juan","Miguel","Sebastián","Andrés","Felipe","Carlos","Baltasar","Ignacio","Lorenzo","Mateo","Ramón","Blas"],
+    lastNames:["Cortés","Pizarro","de Alvarado","de Soto","Valdivia","Balboa","de Orellana","Quesada","Belalcázar","de Narváez","Jiménez","Montejo","Almagro","Benalcázar","de León","de Vaca","Aguirre","de Garay","Cabrillo","Coronado"],
+    classes:["warrior","warrior","warrior","ranged"],
+    epithets:["the Conqueror","the Iron","the Fearless","del Fuego","the Bold","of the New World","the Relentless","Sangre de Acero"]},
+  french:{id:"french",name:"Le Royaume des Preux",short:"Le Royaume",cls:"reg-french",dot:"dot-french",
+    desc:"Knights of honour and archers of the court, masters of chivalric combat",
+    firstNames:["Roland","Gaston","Henri","Guillaume","Bertrand","Arnaud","Raoul","Thierry","Gilles","Philippe","Louis","Renaud","Godefroy","Thibaut","Anselm","Perceval","Lancelot","Tristan","Baudouin","Enguerrand"],
+    lastNames:["de Montfort","du Guesclin","de Lusignan","Plantagenêt","de Bourbon","d'Anjou","de Valois","de Blois","de Châtillon","de Coucy","de Rochefort","de Laval","de Foix","de Nemours","de Beaujeu","de Clermont","de Vergy","d'Aubusson","de Chabannes","de Brimeu"],
+    classes:["warrior","warrior","mage","ranged"],
+    epithets:["the Valiant","le Fort","the Chivalrous","du Nord","the Pious","l'Invincible","the Just","Épée d'Or"]},
+  viking:{id:"viking",name:"Midgard",short:"Midgard",cls:"reg-viking",dot:"dot-viking",
+    desc:"Berserkers and runic shamans from the frozen shores of the north",
+    firstNames:["Bjorn","Ragnar","Sigurd","Harald","Leif","Gunnar","Ivar","Erik","Thorvald","Ulfr","Skadi","Bödvar","Knut","Orm","Snorri","Halvard","Fridtjof","Egil","Olaf","Sven"],
+    lastNames:["Ironside","Lothbrok","the Dragonslayer","Blackaxe","Forkbeard","Skullcrusher","the Boneless","Stormborn","Ravenhair","Wolfclaw","Thunderfist","the Fierce","Goldenhair","the Elder","Ironwood","Serpentbane","Earthshaker","the Undying","Deepmind","Firebeard"],
+    classes:["warrior","warrior","mage","ranged"],
+    epithets:["the Undying","Berserker","of Valhalla","Stormborn","the Ancient","Rune-Blessed","the Feared","Mjölnir's Chosen"]},
+  sahel:{id:"sahel",name:"Les Royaumes du Sahel",short:"Le Sahel",cls:"reg-sahel",dot:"dot-sahel",
+    desc:"Spirit-callers and spear masters from the great kingdoms of the south",
+    firstNames:["Sundiata","Musa","Tamba","Kaba","Soumaoro","Djata","Fakoli","Tiéba","Biton","Samori","Askia","Kankan","Oumar","Seku","Modibo","Babemba","Filiga","Naba","Wari","Zara"],
+    lastNames:["Keita","Kouyaté","Diallo","Coulibaly","Traoré","Konaté","Diabaté","Sissoko","Sanogo","Dembélé","Bamba","Camara","Diarra","Touré","Sylla","Sidibé","Doumbia","Koné","Bagayoko","Coulibaly"],
+    classes:["warrior","ranged","mage","stealth"],
+    epithets:["the Lion","Spirit-Speaker","of the Savanna","the Mighty","Son of Earth","the Ancient","Spear of the Gods","Shadow-Walker"]},
+  arabic:{id:"arabic",name:"Bilad al-Fursan",short:"Al-Fursan",cls:"reg-arabic",dot:"dot-arabic",
+    desc:"Desert duelists and sand mages, masters of blade and wind",
+    firstNames:["Khalid","Saladin","Tariq","Umar","Ali","Hassan","Mansur","Ziyad","Baybars","Nizam","Qutuz","Baraka","Nur","Saif","Faris","Rashid","Haroun","Jafar","Murad","Yusuf"],
+    lastNames:["ibn Walid","al-Ayyubi","ibn Ziyad","al-Faruq","ibn Abi Talib","al-Mansur","al-Aqba","ibn Nusayr","al-Bundugdari","al-Mulk","al-Muzaffar","Khan","al-Din","al-Dawla","al-Islam","al-Rashid","al-Barmaki","ibn Yahya","al-Shahid","al-Ghazi"],
+    classes:["warrior","stealth","mage","ranged"],
+    epithets:["the Blade","of the Desert","the Swift","al-Suyuf","the Wise","Shadow of God","the Unbroken","Flame of the East"]},
+  samurai:{id:"samurai",name:"武の国",short:"Buno-Kuni",cls:"reg-samurai",dot:"dot-samurai",
+    desc:"Sword masters and onmyoji sorcerers of the eastern isles",
+    firstNames:["Takeda","Uesugi","Tokugawa","Oda","Shimazu","Mori","Chosokabe","Date","Sanada","Honda","Ii","Fukushima","Kuroda","Ishida","Kobayakawa","Kato","Konishi","Otomo","Ryuzoji","Tachibana"],
+    lastNames:["Shingen","Kenshin","Ieyasu","Nobunaga","Yoshihiro","Motonari","Motochika","Masamune","Yukimura","Tadakatsu","Naomasa","Masanori","Nagamasa","Mitsunari","Hideaki","Kiyomasa","Yukinaga","Sorin","Takanobu","Muneshige"],
+    classes:["warrior","stealth","mage","ranged"],
+    epithets:["the Blade","of the Rising Sun","the Silent","no Kami","the Unyielding","Spirit-Walker","the Ronin","Heaven's Edge"]}
+};
+
+// ══════════════════════════════════════════════════════════════
+// SKILL SYSTEM
+// ══════════════════════════════════════════════════════════════
+const SKILLS={
+  // UNIVERSAL (any region, any class)
+  universal:[
+    {id:"battlecry",name:"Battle Cry",desc:"Boost own ATK by 30% for 2 turns",effect:"atk_boost",power:0.30,duration:2,triggerChance:0.35},
+    {id:"ironwill",name:"Iron Will",desc:"Restore 15% of max HP",effect:"heal",power:0.15,triggerChance:0.30},
+    {id:"second_wind",name:"Second Wind",desc:"Recover 40% stamina",effect:"stamina_restore",power:0.40,triggerChance:0.28},
+    {id:"focus",name:"Focus",desc:"Next attack ignores defense",effect:"piercing",power:1.0,triggerChance:0.32},
+    {id:"counterstrike",name:"Counterstrike",desc:"Deal 150% damage on counter this turn",effect:"counter_boost",power:1.50,triggerChance:0.28},
+  ],
+  // REGIONAL SKILLS
+  conq:[
+    {id:"tercio_fire",name:"Tercio Fire",cls:["warrior","ranged"],desc:"Volley of shots — physical damage hits 2-4 times",effect:"multishot",power:1.0,hits:[2,4],triggerChance:0.38},
+    {id:"inquisition",name:"Inquisition",cls:["warrior","priest"],desc:"Freezes opponent for 1-2 turns",effect:"freeze",duration:[1,2],triggerChance:0.30},
+    {id:"conquistador_charge",name:"Conquistador Charge",cls:["warrior"],desc:"Devastating charge: 180% physical damage",effect:"heavy_hit",power:1.80,triggerChance:0.32},
+    {id:"armored_faith",name:"Armored Faith",cls:["priest","warrior"],desc:"Reduce incoming damage by 40% for 2 turns",effect:"shield",power:0.40,duration:2,triggerChance:0.28},
+    {id:"new_world_fury",name:"New World Fury",desc:"All stats +20% for 1 turn",effect:"full_boost",power:0.20,duration:1,triggerChance:0.22},
+  ],
+  french:[
+    {id:"chivalric_lance",name:"Chivalric Lance",cls:["warrior"],desc:"Mounted charge: 200% damage, stuns 1 turn",effect:"lance_charge",power:2.0,triggerChance:0.28},
+    {id:"longbow_rain",name:"Longbow Rain",cls:["ranged"],desc:"Arrow volley: hits 3 times at 80% power each",effect:"multishot",power:0.80,hits:[3,3],triggerChance:0.35},
+    {id:"court_magic",name:"Court Magic",cls:["mage"],desc:"Arcane blast: 160% magic damage",effect:"heavy_hit",power:1.60,triggerChance:0.34},
+    {id:"holy_blessing",name:"Holy Blessing",cls:["priest"],desc:"Heal 25% HP and cleanse freeze",effect:"heal",power:0.25,cleanse:true,triggerChance:0.32},
+    {id:"parry",name:"Master Parry",cls:["warrior","stealth"],desc:"Block next attack completely",effect:"block",power:1.0,triggerChance:0.30},
+    {id:"shadow_step",name:"Shadow Step",cls:["stealth"],desc:"Teleport behind enemy: 170% damage ignoring armor",effect:"piercing_hit",power:1.70,triggerChance:0.30},
+  ],
+  viking:[
+    {id:"berserker_rage",name:"Berserker Rage",cls:["warrior"],desc:"Attack 3 times at 90% power, ignoring defense",effect:"multishot",power:0.90,hits:[3,3],triggerChance:0.33},
+    {id:"runic_blast",name:"Runic Blast",cls:["mage"],desc:"Lightning strike: 200% magic damage",effect:"heavy_hit",power:2.0,triggerChance:0.28},
+    {id:"shield_wall",name:"Shield Wall",cls:["warrior","priest"],desc:"Reduce damage taken by 50% for 2 turns",effect:"shield",power:0.50,duration:2,triggerChance:0.30},
+    {id:"valkyrie_call",name:"Valkyrie's Call",cls:["priest"],desc:"Restore 30% HP and boost all stats 15%",effect:"divine_heal",power:0.30,boost:0.15,triggerChance:0.25},
+    {id:"axes_fury",name:"Axes of Fury",cls:["warrior","ranged"],desc:"Dual axe throw: 2 hits at 110% each",effect:"multishot",power:1.10,hits:[2,2],triggerChance:0.35},
+    {id:"ghost_strike",name:"Ghost Strike",cls:["stealth"],desc:"Invisible strike: 220% damage, enemy loses 1 turn",effect:"ghost_hit",power:2.20,triggerChance:0.25},
+  ],
+  sahel:[
+    {id:"spirit_call",name:"Spirit Call",cls:["mage","priest"],desc:"Summon spirit: attacks twice at full power",effect:"multishot",power:1.0,hits:[2,2],triggerChance:0.32},
+    {id:"savanna_sprint",name:"Savanna Sprint",cls:["ranged","stealth"],desc:"Triple speed: attack 3 times at 70% power",effect:"multishot",power:0.70,hits:[3,3],triggerChance:0.30},
+    {id:"ancestral_shield",name:"Ancestral Shield",cls:["warrior","priest"],desc:"Ancestors protect: absorb up to 25HP of damage",effect:"absorb_shield",power:25,triggerChance:0.30},
+    {id:"earth_curse",name:"Earth Curse",cls:["mage"],desc:"Reduce enemy DEF by 40% for 3 turns",effect:"debuff_def",power:0.40,duration:3,triggerChance:0.30},
+    {id:"spear_master",name:"Spear Mastery",cls:["warrior","ranged"],desc:"Precise throw: 190% physical damage",effect:"heavy_hit",power:1.90,triggerChance:0.32},
+  ],
+  arabic:[
+    {id:"desert_mirage",name:"Desert Mirage",cls:["stealth","mage"],desc:"Clone self — enemy attacks miss next turn",effect:"evade",power:1.0,triggerChance:0.30},
+    {id:"scimitar_dance",name:"Scimitar Dance",cls:["warrior","stealth"],desc:"Whirlwind: 4 hits at 70% each",effect:"multishot",power:0.70,hits:[4,4],triggerChance:0.30},
+    {id:"sandstorm",name:"Sandstorm",cls:["mage","ranged"],desc:"Blinds enemy: −50% accuracy for 2 turns",effect:"blind",power:0.50,duration:2,triggerChance:0.28},
+    {id:"divine_favor",name:"Divine Favor",cls:["priest"],desc:"Heal 35% HP, remove all debuffs",effect:"heal",power:0.35,cleanse:true,triggerChance:0.28},
+    {id:"blade_wind",name:"Blade of the Wind",cls:["warrior","ranged"],desc:"Lightning fast cut: 160% damage, +50% speed next turn",effect:"swift_strike",power:1.60,triggerChance:0.32},
+  ],
+  samurai:[
+    {id:"iaijutsu",name:"Iaijutsu",cls:["warrior","stealth"],desc:"Instant draw: 250% damage on first strike",effect:"heavy_hit",power:2.50,triggerChance:0.25},
+    {id:"ki_blast",name:"Ki Blast",cls:["mage","priest"],desc:"Spiritual energy: 180% magic damage",effect:"heavy_hit",power:1.80,triggerChance:0.30},
+    {id:"bushido_oath",name:"Bushido Oath",desc:"When below 30% HP: all stats double for 2 turns",effect:"low_hp_boost",power:2.0,hpThreshold:0.30,duration:2,triggerChance:0.40},
+    {id:"ninjutsu",name:"Ninjutsu",cls:["stealth","ranged"],desc:"Poison strike: 120% damage + 8HP per turn for 3 turns",effect:"poison",power:1.20,dot:8,duration:3,triggerChance:0.32},
+    {id:"temple_prayer",name:"Temple Prayer",cls:["priest","mage"],desc:"Meditate: restore 20% HP, +25% magic next 2 turns",effect:"meditate",power:0.20,boost:0.25,duration:2,triggerChance:0.28},
+    {id:"kenjutsu",name:"Kenjutsu",cls:["warrior"],desc:"Perfect sword form: 3 hits at 100% with chance to stun",effect:"multishot",power:1.0,hits:[3,3],stun:0.25,triggerChance:0.30},
+  ]
+};
+
+function getSkillPool(region,cls){
+  const base=[...SKILLS.universal];
+  const regional=SKILLS[region]||[];
+  // Filter: include skills with matching class or no class restriction
+  const matching=regional.filter(s=>!s.cls||s.cls.includes(cls));
+  return shuffle([...base,...matching]);
+}
+
+function awardSkill(warrior,fromQuest=false){
+  if(warrior.specialSkills.length>=3)return;
+  const pool=getSkillPool(warrior.region,warrior.cls);
+  const existing=new Set(warrior.specialSkills.map(s=>s.id));
+  const eligible=pool.filter(s=>!existing.has(s.id));
+  if(!eligible.length)return;
+  const skill=pick(eligible);
+  warrior.specialSkills.push({...skill});
+  // If over 3, keep random 3
+  if(warrior.specialSkills.length>3)warrior.specialSkills=shuffle(warrior.specialSkills).slice(0,3);
+}
+
+function applySkill(skill,attacker,defender,cs){
+  if(!skill||Math.random()>skill.triggerChance)return null;
+  const usesMagic=attacker.cls==="mage"||attacker.cls==="priest";
+  const rawAtk=usesMagic?attacker.stats.magic:attacker.stats.strength;
+  let msg="",dmgDone=0;
+  switch(skill.effect){
+    case"multishot":{
+      const hits=Array.isArray(skill.hits)?rand(skill.hits[0],skill.hits[1]):2;
+      for(let i=0;i<hits;i++){
+        const d=Math.max(1,Math.round(rawAtk*skill.power*0.3+rand(-3,5)));
+        dmgDone+=d;
+      }
+      msg=`✨ ${skill.name}: ${hits} hits for ${dmgDone} total damage!`;
+      break;}
+    case"heavy_hit":case"lance_charge":case"ghost_hit":case"piercing_hit":case"swift_strike":{
+      dmgDone=Math.max(2,Math.round(rawAtk*skill.power*0.35+rand(-3,6)));
+      msg=`✨ ${skill.name}: ${dmgDone} damage!`;
+      break;}
+    case"heal":case"divine_heal":{
+      const maxHp=attacker===cs.a?cs.maxHpA:cs.maxHpB;
+      const heal=Math.round(maxHp*skill.power);
+      if(attacker===cs.a)cs.hpA=Math.min(cs.maxHpA,cs.hpA+heal);
+      else cs.hpB=Math.min(cs.maxHpB,cs.hpB+heal);
+      msg=`💚 ${skill.name}: restored ${heal} HP!`;
+      break;}
+    case"stamina_restore":{
+      const restore=Math.round(attacker.stats.stamina*skill.power);
+      if(attacker===cs.a)cs.stamA=Math.min(cs.a.stats.stamina,cs.stamA+restore);
+      else cs.stamB=Math.min(cs.b.stats.stamina,cs.stamB+restore);
+      msg=`💙 ${skill.name}: +${restore} stamina!`;
+      break;}
+    case"freeze":case"blind":case"evade":{
+      const dur=Array.isArray(skill.duration)?rand(skill.duration[0],skill.duration[1]):skill.duration||1;
+      if(defender===cs.a)cs.frozenA=(cs.frozenA||0)+dur;
+      else cs.frozenB=(cs.frozenB||0)+dur;
+      msg=`❄️ ${skill.name}: ${defender.name} frozen for ${dur} turn(s)!`;
+      break;}
+    case"shield":{
+      if(attacker===cs.a)cs.shieldA={power:skill.power,turns:skill.duration||2};
+      else cs.shieldB={power:skill.power,turns:skill.duration||2};
+      msg=`🛡 ${skill.name}: damage reduced ${Math.round(skill.power*100)}% for ${skill.duration} turns!`;
+      break;}
+    case"poison":{
+      if(defender===cs.a)cs.poisonA={dot:skill.dot,turns:skill.duration||3};
+      else cs.poisonB={dot:skill.dot,turns:skill.duration||3};
+      dmgDone=Math.max(1,Math.round(rawAtk*skill.power*0.3));
+      msg=`☠️ ${skill.name}: ${dmgDone} dmg + ${skill.dot}HP poison for ${skill.duration} turns!`;
+      break;}
+    case"low_hp_boost":{
+      const curHp=attacker===cs.a?cs.hpA:cs.hpB;
+      const maxHp2=attacker===cs.a?cs.maxHpA:cs.maxHpB;
+      if(curHp/maxHp2<=skill.hpThreshold){
+        if(attacker===cs.a)cs.boostA={power:skill.power,turns:skill.duration||2};
+        else cs.boostB={power:skill.power,turns:skill.duration||2};
+        msg=`🔥 ${skill.name}: desperate power surge!`;
+      }break;}
+    case"full_boost":case"atk_boost":case"meditate":{
+      if(attacker===cs.a)cs.boostA={power:skill.power,turns:skill.duration||2};
+      else cs.boostB={power:skill.power,turns:skill.duration||2};
+      msg=`⚡ ${skill.name}: stats boosted ${Math.round(skill.power*100)}%!`;
+      break;}
+    default:
+      msg=`✨ ${skill.name} activates!`;
+  }
+  return{msg,dmgDone};
+}
+
+const TRAINING_TYPES=[
+  {name:"Solo Training",stars:1,desc:"Training alone, focused and disciplined",min:1,max:3},
+  {name:"Training with a Master",stars:2,desc:"An old master shares their wisdom",min:2,max:5},
+  {name:"Month in the Wilderness",stars:2,desc:"Survival and hardship forge the body",min:2,max:5},
+  {name:"Military Campaign",stars:2,desc:"Real combat is the greatest teacher",min:2,max:6},
+  {name:"Ancient Tome Study",stars:2,desc:"Forbidden knowledge unlocked",min:2,max:5},
+  {name:"Training with a Legend",stars:3,desc:"A legendary warrior shares their secrets",min:4,max:8},
+  {name:"Sacred Mountain Retreat",stars:3,desc:"The gods themselves guide your growth",min:5,max:10},
+  {name:"Trial by the Gods",stars:3,desc:"Divine intervention accelerates mastery",min:6,max:12}
+];
+
+const STAT_NAMES={strength:"Strength",magic:"Magic",endurance:"Endurance",intelligence:"Intelligence",attackSkill:"Attack Skill",defenseSkill:"Defense Skill",speed:"Speed",stamina:"Stamina"};
+const STAT_KEYS=Object.keys(STAT_NAMES);
+const CLASS_WEIGHTS={
+  warrior:{strength:3,magic:0,endurance:3,intelligence:1,attackSkill:3,defenseSkill:2,speed:1,stamina:2},
+  mage:{strength:0,magic:3,endurance:1,intelligence:3,attackSkill:1,defenseSkill:1,speed:1,stamina:2},
+  ranged:{strength:1,magic:1,endurance:1,intelligence:2,attackSkill:3,defenseSkill:1,speed:3,stamina:2},
+  stealth:{strength:1,magic:1,endurance:1,intelligence:3,attackSkill:2,defenseSkill:2,speed:3,stamina:1},
+  priest:{strength:0,magic:2,endurance:2,intelligence:3,attackSkill:1,defenseSkill:2,speed:1,stamina:3}
+};
+
+// Titles by level
+function getTitlePrefix(level){
+  if(level>=60)return"Paragon ";
+  if(level>=50)return"Master ";
+  if(level>=40)return"Warlord ";
+  if(level>=30)return"Champion ";
+  if(level>=20)return"Lord ";
+  if(level>=10)return"Sir ";
+  return"";
+}
+function displayName(warrior){
+  return getTitlePrefix(warrior.level)+warrior.baseName;
+}
+
+// Age-based XP and stat gain multiplier
+function ageGrowthMult(age){
+  if(age<=22)return 1.4;// young, growing fast
+  if(age<=27)return 1.2;
+  if(age<=32)return 1.0;
+  if(age<=35)return 0.7;
+  if(age<=37)return 0.4;
+  return 0;// 38+ can't gain XP
+}
+
+// Annual stat decay for older warriors
+function applyAgingDecay(warrior){
+  if(warrior.age<35)return;
+  const decayPerYear=warrior.age<=37?1:warrior.age<=39?2:3;
+  const decayStats=shuffle([...STAT_KEYS]).slice(0,decayPerYear);
+  decayStats.forEach(k=>{warrior.stats[k]=Math.max(10,warrior.stats[k]-rand(1,3));});
+}
+
+
+const BASIC_QUESTS=[
+  "Escorted a merchant caravan safely","Cleared bandits from the road","Trained recruits at the barracks",
+  "Defended a village from raiders","Hunted dangerous game in the forest","Delivered a royal message",
+  "Won a local tavern brawl tournament","Recovered stolen goods from thieves","Protected a shrine from vandals",
+  "Mediated a dispute between warlords","Scouted enemy territory","Patrolled the border for a season",
+  "Guarded a noble's household","Competed in a regional festival","Hunted wolves terrorizing a farm",
+  "Recovered a stolen artifact","Trained under a regional champion","Crushed a small uprising",
+  "Navigated treacherous mountain passes","Competed in an archery contest"
+];
+
+const SPECIAL_QUESTS=[
+  {name:"Slay the Dragon of the Northern Peaks",stars:5,region:"viking",danger:0.40},
+  {name:"Defeat the Orc Warlord Grothak",stars:4,region:"french",danger:0.25},
+  {name:"Assassinate the Shadow Vizier",stars:4,region:"arabic",danger:0.28},
+  {name:"Survive the Trial of the Desert Djinn",stars:5,region:"arabic",danger:0.38},
+  {name:"Defeat the Cursed Samurai of the Void",stars:4,region:"samurai",danger:0.22},
+  {name:"Hunt the Great Spirit-Beast of the Savanna",stars:3,region:"sahel",danger:0.15},
+  {name:"Break the Siege of Fort Castillo",stars:3,region:"conq",danger:0.12},
+  {name:"Duel the Bandit King of the Sahara",stars:2,region:"arabic",danger:0.08},
+  {name:"Protect the Sacred Grove from Dark Magic",stars:3,region:"french",danger:0.14},
+  {name:"Lead the Raid on the Sea Serpent's Lair",stars:5,region:"viking",danger:0.45},
+  {name:"Recover the Emperor's Sacred Blade",stars:4,region:"samurai",danger:0.26},
+  {name:"Defeat the Undead Army of the Old Kingdom",stars:5,region:"sahel",danger:0.42},
+  {name:"Crush the Conquistador Rebel Faction",stars:3,region:"conq",danger:0.16},
+  {name:"Survive the Gauntlet of Champions",stars:4,region:"french",danger:0.24},
+  {name:"Hunt the Legendary White Tiger",stars:2,region:"samurai",danger:0.07},
+  {name:"Duel the Ghost of a Fallen Legend",stars:5,region:"viking",danger:0.35},
+  {name:"Protect the Merchant Fleet from Pirates",stars:2,region:"conq",danger:0.09},
+  {name:"Break a Dark Sorcerer's Curse",stars:4,region:"samurai",danger:0.30},
+  {name:"Lead the Charge at the Battle of Red Sands",stars:3,region:"arabic",danger:0.18},
+  {name:"Survive Three Nights in the Haunted Forest",stars:2,region:"french",danger:0.10}
+];
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let S={
+  year:1,
+  phase:"start",sqRunning:false,// start | training | regional | basic_quests | special_quests | tournament | end
+  phaseStep:0,
+  warriors:[],
+  history:[],// [{year, tournamentResult, quests:[], specialQuests:[]}]
+  currentYearData:{training:null,regional:null,basicQuests:null,specialQuests:null,tournament:null},
+  nextId:1
+};
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function tierOf(fame){return fame>=4000?"legendary":fame>=2000?"epic":fame>=800?"rare":fame>=250?"uncommon":"common";}
+function tierLabel(fame){return{legendary:"Legendary",epic:"Epic",rare:"Rare",uncommon:"Uncommon",common:"Common"}[tierOf(fame)];}
+function ovr(stats){return Math.round(Object.values(stats).reduce((a,b)=>a+b,0)/8);}
+function stars(n){return "★".repeat(n)+"☆".repeat(5-n);}
+function fmtStar(n){return`<span class="star-gold">${"★".repeat(n)}</span><span style="color:var(--txt3)">${"☆".repeat(5-n)}</span>`;}
+function xpToLevel(lvl){return Math.round(20+(lvl-1)*15);}
+function regionColor(rid){return`var(--${rid==="conq"?"conq":rid==="french"?"french":rid==="viking"?"viking":rid==="sahel"?"sahel":rid==="arabic"?"arabic":"samurai"})`;}
+
+function generateWarrior(regionId,isRookie=false){
+  const reg=REGIONS[regionId];
+  const clsPool=[...reg.classes,"priest"];// add priest to every region
+  const cls=pick(clsPool);
+  const w={};
+  const weights=CLASS_WEIGHTS[cls]||CLASS_WEIGHTS.warrior;
+  const baseLow=isRookie?10:20;
+  const baseHigh=isRookie?30:55;
+  STAT_KEYS.forEach(k=>{
+    const wt=weights[k];
+    const base=rand(baseLow,baseHigh);
+    w[k]=clamp(base+wt*rand(0,5),1,100);
+  });
+  const fn=pick(reg.firstNames),ln=pick(reg.lastNames);
+  const epithet=Math.random()<0.4?pick(reg.epithets):null;
+  const baseName=epithet?`${fn} ${ln}, ${epithet}`:`${fn} ${ln}`;
+  const level=isRookie?1:rand(2,8);
+  const warrior={
+    id:S.nextId++,baseName,name:baseName,region:regionId,cls,
+    age:isRookie?rand(17,22):rand(22,34),
+    level,xp:0,fame:isRookie?0:rand(0,80),
+    alive:true,retired:false,
+    stats:w,
+    career:{tournaments:[],quests:[],specialQuests:[],regionalTitles:0,grandTitles:0,fights:0,wins:0},
+    artifact:null,specialSkills:[]
+  };
+  // Apply title
+  warrior.name=displayName(warrior);
+  // Award initial skills to experienced warriors
+  if(!isRookie&&level>=5&&Math.random()<0.5)awardSkill(warrior,false);
+  if(!isRookie&&level>=8&&Math.random()<0.3)awardSkill(warrior,false);
+  return warrior;
+}
+
+function initWorld(){
+  S.warriors=[];
+  Object.keys(REGIONS).forEach(rid=>{
+    for(let i=0;i<7;i++)S.warriors.push(generateWarrior(rid,false));
+    for(let i=0;i<3;i++)S.warriors.push(generateWarrior(rid,true));
+  });
+  // Year 1: almost everyone Common (0-99), only a couple Uncommon, nobody Rare+
+  S.warriors.forEach(w=>{
+    // Level 1-3: pure Common
+    if(w.level<=3){w.fame=rand(0,40);}
+    // Level 4-6: low Common, tiny chance Uncommon
+    else if(w.level<=6){w.fame=rand(10,Math.random()<0.15?110:80);}
+    // Level 7-8: mostly Common, small chance Uncommon
+    else{w.fame=rand(20,Math.random()<0.2?130:90);}
+  });
+  // Ensure at most 3 warriors are Uncommon (100+) and none are Rare+
+  let uncommonCount=S.warriors.filter(w=>w.fame>=100).length;
+  while(uncommonCount>3){
+    const overFame=S.warriors.filter(w=>w.fame>=100);
+    pick(overFame).fame=rand(60,99);
+    uncommonCount=S.warriors.filter(w=>w.fame>=100).length;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// PHASE MACHINE
+// ══════════════════════════════════════════════════════════════
+const PHASES=["start","training","regional","basic_quests","special_quests","tournament","year_end"];
+const PHASE_LABELS={
+  start:"New Warriors",training:"Training Season",regional:"Regional Tournaments",
+  basic_quests:"Basic Quests",special_quests:"Special Quests",tournament:"Grand Tournament",
+  year_end:"Year End"
+};
+
+function advancePhase(){
+  if(S.phase==="start"){
+    announceNewWarriors();
+    S.phase="training";
+    autoSave();
+    renderCurrentYear();
+    showPhaseDetail("start");
+  } else if(S.phase==="training"){
+    runTraining();
+    S.phase="regional";
+    autoSave();
+    renderCurrentYear();
+    showPhaseDetail("training");// show TRAINING results, not regional
+  } else if(S.phase==="regional"){
+    runRegionals();
+    S.phase="basic_quests";
+    autoSave();
+    renderCurrentYear();
+    showPhaseDetail("regional");// show REGIONAL results
+  } else if(S.phase==="basic_quests"){
+    runBasicQuests();
+    S.phase="special_quests";
+    autoSave();
+    renderCurrentYear();
+    showPhaseDetail("basic_quests");// show BASIC QUEST results
+  } else if(S.phase==="special_quests"){
+    startSpecialQuests();
+  } else if(S.phase==="tournament"){
+    startGrandTournament();
+  } else if(S.phase==="year_end"){
+    endYear();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// NEW WARRIORS
+// ══════════════════════════════════════════════════════════════
+let newWarriorsThisYear=[];
+let retiredThisYear=[];
+let diedPreviousYear=[];
+function announceNewWarriors(){
+  newWarriorsThisYear=[];retiredThisYear=[];
+  diedPreviousYear=S.warriors.filter(w=>!w.alive&&w.diedInYear===S.year-1);
+  S.warriors.forEach(w=>{
+    if(!w.alive||w.retired)return;
+    w.age++;
+    applyAgingDecay(w);
+    if(w.age>=38){
+      const retChance=(w.age-37)*0.12;
+      if(Math.random()<retChance){
+        w.retired=true;w.retiredInYear=S.year;
+        w.career.yearLog=w.career.yearLog||[];
+        w.career.yearLog.push({year:S.year,event:"retired"});
+        retiredThisYear.push(w);return;
+      }
+    }
+  });
+  // Replenish: target 7 active per region, global cap 55 active warriors total
+  const GLOBAL_CAP=55;
+  const TARGET_PER_REGION=7;
+  Object.keys(REGIONS).forEach(rid=>{
+    const totalActive=S.warriors.filter(w=>w.alive&&!w.retired).length;
+    if(totalActive>=GLOBAL_CAP)return;
+    const regionActive=S.warriors.filter(w=>w.region===rid&&w.alive&&!w.retired).length;
+    const needed=Math.max(0,TARGET_PER_REGION-regionActive);
+    const canAdd=Math.min(needed,GLOBAL_CAP-totalActive);
+    for(let i=0;i<canAdd;i++){
+      const rookie=generateWarrior(rid,true);
+      rookie.joinedInYear=S.year;
+      rookie.career.yearLog=[{year:S.year,event:"joined"}];
+      S.warriors.push(rookie);newWarriorsThisYear.push(rookie);
+    }
+  });
+  S.currentYearData.newWarriors={new:newWarriorsThisYear,retired:retiredThisYear,died:diedPreviousYear};
+}
+
+// ══════════════════════════════════════════════════════════════
+// TRAINING
+// ══════════════════════════════════════════════════════════════
+function runTraining(){
+  levelUpLog=[];// reset at start of each year's training
+  const active=S.warriors.filter(w=>w.alive&&!w.retired);
+  const results=[];
+  active.forEach(w=>{
+    const t=pick(TRAINING_TYPES);
+    // Focus stat weighted by class
+    const wts=CLASS_WEIGHTS[w.cls];
+    const pool=[];
+    STAT_KEYS.forEach(k=>{for(let i=0;i<(wts[k]||1);i++)pool.push(k);});
+    const stat=pick(pool);
+    const gain=rand(t.min,t.max);
+    const oldVal=w.stats[stat];
+    w.stats[stat]=clamp(w.stats[stat]+gain,1,100);
+    const actual=w.stats[stat]-oldVal;
+    results.push({warrior:w,training:t,stat,gain:actual,oldVal,newVal:w.stats[stat]});
+  });
+  S.currentYearData.training=results;
+}
+
+// ══════════════════════════════════════════════════════════════
+// REGIONAL TOURNAMENTS
+// ══════════════════════════════════════════════════════════════
+function runRegionals(){
+  const results={};
+  Object.keys(REGIONS).forEach(rid=>{
+    const pool=S.warriors.filter(w=>w.region===rid&&w.alive&&!w.retired);
+    const shuffled=shuffle(pool);
+    // Simple bracket: pair up, simulate wins by ovr+random
+    let remaining=[...shuffled];
+    const rounds=[];
+    while(remaining.length>1){
+      const round=[];
+      const next=[];
+      for(let i=0;i<remaining.length-1;i+=2){
+        const a=remaining[i],b=remaining[i+1];
+        const winner=simpleSimFight(a,b);
+        const loser=winner===a?b:a;
+        round.push({a,b,winner,loser});
+        winner.fame+=rand(8,18);winner.career.fights++;winner.career.wins++;
+        loser.fame+=rand(2,5);loser.career.fights++;
+        gainXPWithLog(winner,15);gainXPWithLog(loser,5);
+        next.push(winner);
+      }
+      if(remaining.length%2!==0)next.push(remaining[remaining.length-1]);
+      rounds.push(round);
+      remaining=next;
+    }
+    const champion=remaining[0];
+    if(champion){champion.fame+=rand(30,60);champion.career.regionalTitles++;}
+    results[rid]={champion,rounds};
+  });
+  S.currentYearData.regional=results;
+  // Log regional result in each warrior's career yearLog
+  S.warriors.filter(w=>w.alive&&!w.retired).forEach(w=>{
+    w.career.yearLog=w.career.yearLog||[];
+    const ridResult=results[w.region];
+    if(!ridResult)return;
+    // Find how far this warrior got
+    let regionalResult="Did not compete";
+    ridResult.rounds.forEach((round,ri)=>{
+      round.forEach(m=>{
+        if(m.winner===w)regionalResult=ri===ridResult.rounds.length-1?"Regional Champion":ri===ridResult.rounds.length-2?"Final":"Semi-Finals";
+        else if(m.loser===w)regionalResult=ri===0?"First Round":ri===1?"Quarter-Finals":"Semi-Finals";
+      });
+    });
+    const entry=w.career.yearLog.find(e=>e.year===S.year);
+    if(entry)entry.regional=regionalResult;
+    else w.career.yearLog.push({year:S.year,regional:regionalResult});
+  });
+}
+
+function simpleSimFight(a,b){
+  const scoreA=ovr(a.stats)+rand(-15,15);
+  const scoreB=ovr(b.stats)+rand(-15,15);
+  return scoreA>=scoreB?a:b;
+}
+
+// ══════════════════════════════════════════════════════════════
+// BASIC QUESTS
+// ══════════════════════════════════════════════════════════════
+function runBasicQuests(){
+  const active=shuffle(S.warriors.filter(w=>w.alive&&!w.retired));
+  const results=[];
+  const questsCopy=shuffle([...BASIC_QUESTS,...BASIC_QUESTS]);// 20+ quests
+  questsCopy.slice(0,20).forEach((q,i)=>{
+    const hero=active[i%active.length];
+    const fame=rand(3,12);
+    hero.fame+=fame;
+    gainXPWithLog(hero,8);
+    hero.career.quests.push({year:S.year,name:q,fame});
+    const bqEntry=hero.career.yearLog?.find(e=>e.year===S.year);
+    if(bqEntry){bqEntry.basicQuests=(bqEntry.basicQuests||0)+1;}
+    else{hero.career.yearLog=hero.career.yearLog||[];hero.career.yearLog.push({year:S.year,basicQuests:1});}
+    results.push({quest:q,hero,fame});
+  });
+  S.currentYearData.basicQuests=results;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SPECIAL QUESTS
+// ══════════════════════════════════════════════════════════════
+let levelUpLog=[];
+let sqQueue=[],sqIdx=0;
+let tournamentState={phase:"idle",participants:[],rumbleFighters:[],bracket:[],currentMatch:null,round:0,results:[],champion:null,rumbleRemaining:[]};
+let rumbleEliminated=new Set();
+let rumbleCurrentWinner=null,rumbleContender=null;
+let regionalDetailRegion=null;
+function startSpecialQuests(){
+  sqQueue=shuffle([...SPECIAL_QUESTS]).slice(0,5);
+  sqIdx=0;
+  S.sqRunning=true;
+  S.currentYearData.specialQuests=[];
+  renderSpecialQuestScreen();
+  syncButton();
+}
+
+function generateQuestNarrative(quest,hero,success,died){
+  const region=REGIONS[hero.region]?.short||"the realm";
+  const heroName=hero.name;
+  const difficulty=["","a minor challenge","a significant threat","a dangerous foe","a fearsome adversary","a legendary terror"][quest.stars]||"an unknown threat";
+
+  const openings={
+    dragon:[`The mountain passes of ${region} had been plagued for months.`,`Smoke rose from the peaks above ${region} as the dragon circled.`,`Three villages had already fallen to its flames.`],
+    orc:[`A war band had descended from the northern wastes.`,`The roads of ${region} ran red with the blood of travellers.`,`No army had dared face them — until now.`],
+    assassin:[`Whispers in the courts spoke of a shadow that could not be caught.`,`Three nobles had already fallen to the unseen blade.`,`The Sultan himself lived in fear.`],
+    default:[`A call for aid came from the far reaches of ${region}.`,`Word spread through the taverns of ${region} — a great challenge awaited.`,`The elders of ${region} could no longer ignore the threat.`]
+  };
+  const key=quest.name.toLowerCase().includes("dragon")?"dragon":quest.name.toLowerCase().includes("orc")?"orc":quest.name.toLowerCase().includes("assassin")||quest.name.toLowerCase().includes("vizier")?"assassin":"default";
+  const opening=pick(openings[key]);
+
+  const middle=success?
+    died?`${heroName} answered the call, knowing the odds were grim.`
+    :`${heroName} studied the enemy for days before striking. The battle was unlike anything the chronicles had recorded.`
+    :`${heroName} rode out to face ${difficulty}, armed with courage if not certainty.`;
+
+  const ending=success&&!died?
+    pick([`When it was over, ${heroName} stood alone on the field. The legend had grown.`,
+      `The bards would sing of this for a generation.`,
+      `${heroName} returned with wounds that would heal, and glory that would not fade.`])
+    :died?`${heroName} fell in battle. A warrior's end, worthy of song.`
+    :pick([`${heroName} was driven back, bloodied but alive. The threat remains.`,
+      `The mission failed. ${heroName} returned in silence.`,
+      `Another champion would need to finish what ${heroName} could not.`]);
+
+  return`${opening} ${middle} ${ending}`;
+}
+
+function renderSpecialQuestScreen(){
+  if(sqIdx>=sqQueue.length){
+    S.sqRunning=false;
+    S.phase="tournament";
+    renderCurrentYear();
+    return;
+  }
+  const q=sqQueue[sqIdx];
+  const hero=assignQuestHero(q);
+  const content=document.getElementById("phase-content");
+  const successChance=calcQuestSuccess(hero,q);
+  const safeQName=q.name.replace(/'/g,"\\'").replace(/"/g,"&quot;");
+  content.innerHTML=`
+    <div class="quest-card" data-hero-id="${hero.id}" data-success="${successChance}" data-danger="${q.danger}" data-stars="${q.stars}" data-quest="${safeQName}">
+      <div class="row"><div class="quest-stars">${fmtStar(q.stars)}</div><span class="tag">${REGIONS[q.region]?.short||q.region}</span><span style="font-size:11px;color:var(--txt3)">Quest ${sqIdx+1}/10</span></div>
+      <div class="quest-title">${q.name}</div>
+      <div class="quest-region" style="margin-bottom:14px">Assigned to: <span style="color:${regionColor(hero.region)};font-family:'Cinzel',serif">${hero.name}</span></div>
+      <div class="row" style="gap:16px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="flex:1;min-width:140px">
+          <div class="sec" style="margin:0 0 6px">HERO STATS</div>
+          ${STAT_KEYS.slice(0,4).map(k=>`
+            <div class="stat-row"><span class="stat-lbl">${STAT_NAMES[k]}</span>
+            <div class="stat-bar-wrap"><div class="stat-bar" style="width:${hero.stats[k]}%"></div></div>
+            <span class="stat-val">${hero.stats[k]}</span></div>`).join("")}
+        </div>
+        <div style="flex:1;min-width:140px">
+          <div class="sec" style="margin:0 0 6px">QUEST DIFFICULTY</div>
+          <div style="font-size:28px;text-align:center;margin:8px 0">${q.stars===5?"💀":q.stars===4?"⚔️":q.stars===3?"🐉":"⚡"}</div>
+          <div style="text-align:center;font-size:12px;color:var(--txt2)">Danger: ${Math.round(q.danger*100)}%</div>
+        </div>
+      </div>
+      <div class="sec" style="margin:0 0 4px">SUCCESS CHANCE</div>
+      <div class="success-bar"><div class="success-fill" style="width:${successChance}%"></div></div>
+      <div style="text-align:right;font-size:12px;color:var(--txt2);margin-bottom:12px">${Math.round(successChance)}%</div>
+      <button class="btn btn-gold" style="width:100%" onclick="resolveSpecialQuestFromCard(this)">⚔ Resolve Quest</button>
+    </div>`;
+}
+
+function assignQuestHero(q){
+  const active=S.warriors.filter(w=>w.alive&&!w.retired);
+  const minLevel=q.stars===1?1:q.stars===2?3:q.stars===3?6:q.stars===4?10:15;
+  const minFame=q.stars<=2?0:q.stars===3?30:q.stars===4?150:400;
+  let eligible=active.filter(w=>w.level>=minLevel&&w.fame>=minFame);
+  if(!eligible.length)eligible=active.filter(w=>w.level>=Math.max(1,minLevel-3));
+  if(!eligible.length)eligible=active;
+  // Weight by level+fame
+  const total=eligible.reduce((s,w)=>s+w.level+w.fame/50,0);
+  let r=Math.random()*total;
+  for(const w of eligible){r-=w.level+w.fame/50;if(r<=0)return w;}
+  return eligible[eligible.length-1];
+}
+
+function calcQuestSuccess(hero,q){
+  const avg=ovr(hero.stats);
+  const base=(avg/100)*(6-q.stars)*25;
+  return clamp(base,5,97);
+}
+
+function resolveSpecialQuestFromCard(btn){
+  const card=btn.closest(".quest-card");
+  const heroId=card.dataset.heroId;
+  const questName=card.dataset.quest;
+  const successChance=parseFloat(card.dataset.success);
+  const danger=parseFloat(card.dataset.danger);
+  const stars=parseInt(card.dataset.stars);
+  resolveSpecialQuest(heroId,questName,successChance,danger,stars);
+}
+function resolveSpecialQuest(heroId,questName,successChance,danger,stars,attemptNum=1,usedHeroIds=[]){
+  const hero=S.warriors.find(w=>w.id==heroId);
+  const success=Math.random()*100<successChance;
+  const died=!success&&Math.random()<danger;
+  let fameChange=0,xpGain=0,msg="",cls="";
+
+  if(success){
+    const attemptMult=attemptNum===1?1:attemptNum===2?0.6:0.35;
+    fameChange=Math.round(rand(15,30)*stars*attemptMult);
+    xpGain=Math.round(25*attemptMult);
+    const prefix=attemptNum===1?"🏆 Victory!":attemptNum===2?"⚔ A second champion prevails!":"🗡 Finally subdued by a third hero!";
+    msg=`${prefix} ${hero.name} completes the quest!`;
+    cls="success";
+    hero.fame+=fameChange;
+    gainXPWithLog(hero,xpGain);
+    // 4-5 star quests: 40% chance to award a skill
+    if(stars>=4&&Math.random()<0.40&&hero.specialSkills.length<3){
+      awardSkill(hero,true);
+      msg+=` Gained a new skill!`;
+    }
+    hero.career.specialQuests.push({year:S.year,name:questName,success:true,died:false,fameChange,stars});
+    {const e=hero.career.yearLog?.find(x=>x.year===S.year);if(e)e.specialQuests=(e.specialQuests||[]).concat({name:questName,stars,success:true});else{hero.career.yearLog=hero.career.yearLog||[];hero.career.yearLog.push({year:S.year,specialQuests:[{name:questName,stars,success:true}]});}}
+    S.currentYearData.specialQuests.push({quest:{name:questName,stars,danger},hero,success:true,died:false,fameChange,xpGain,attempt:attemptNum});
+    autoSave();
+    appendQuestOutcome(cls,msg,fameChange,xpGain,false,questName,stars,hero,success);
+    appendNextQuestBtn();
+  } else if(died){
+    fameChange=-rand(20,50);
+    xpGain=10;
+    msg=`💀 ${hero.name} has fallen, never to return...`;
+    cls="failure";
+    hero.alive=false;hero.diedInYear=S.year;
+    hero.fame=Math.max(0,hero.fame+fameChange);
+    gainXPWithLog(hero,xpGain);
+    hero.career.specialQuests.push({year:S.year,name:questName,success:false,died:true,fameChange,stars});
+    S.currentYearData.specialQuests.push({quest:{name:questName,stars,danger},hero,success:false,died:true,fameChange,xpGain,attempt:attemptNum});
+    autoSave();
+    appendQuestOutcome(cls,msg,fameChange,xpGain,true,questName,stars,hero,success);
+    // Attempt retry if under 3 attempts
+    offerRetry(questName,stars,danger,attemptNum,[...usedHeroIds,heroId]);
+  } else {
+    fameChange=-rand(5,15);
+    xpGain=8;
+    msg=`⚔ ${hero.name} was defeated — the quest remains unfinished.`;
+    cls="failure";
+    hero.fame=Math.max(0,hero.fame+fameChange);
+    gainXPWithLog(hero,xpGain);
+    hero.career.specialQuests.push({year:S.year,name:questName,success:false,died:false,fameChange,stars});
+    {const e=hero.career.yearLog?.find(x=>x.year===S.year);if(e)e.specialQuests=(e.specialQuests||[]).concat({name:questName,stars,success:false});else{hero.career.yearLog=hero.career.yearLog||[];hero.career.yearLog.push({year:S.year,specialQuests:[{name:questName,stars,success:false}]});}}
+    S.currentYearData.specialQuests.push({quest:{name:questName,stars,danger},hero,success:false,died:false,fameChange,xpGain,attempt:attemptNum});
+    autoSave();
+    appendQuestOutcome(cls,msg,fameChange,xpGain,false,questName,stars,hero,success);
+    offerRetry(questName,stars,danger,attemptNum,[...usedHeroIds,heroId]);
+  }
+}
+
+function appendQuestOutcome(cls,msg,fameChange,xpGain,died,questName,stars,hero,success){
+  const content=document.getElementById("phase-content");
+  const card=content.querySelector(".quest-card");
+  if(!card)return;
+  card.querySelectorAll("button").forEach(b=>b.remove());
+  const narrative=generateQuestNarrative({name:questName,stars},hero,success,died);
+  card.innerHTML+=`
+    <div style="font-size:13px;color:var(--txt2);font-style:italic;line-height:1.7;padding:10px;background:var(--bg);border-radius:var(--r);margin:8px 0;border-left:3px solid ${success?"var(--uncommon)":"var(--red)"}">"${narrative}"</div>
+    <div class="outcome-banner ${cls}" style="margin-top:4px">${msg}<br>
+    <small style="font-size:13px">${fameChange>=0?"+":""}${fameChange} Fame${died?" · ⚰ FALLEN":""} · +${xpGain} XP</small></div>`;
+}
+
+function offerRetry(questName,stars,danger,attemptNum,usedHeroIds){
+  if(attemptNum>=3){
+    // All 3 attempts exhausted
+    const content=document.getElementById("phase-content");
+    const card=content.querySelector(".quest-card");
+    card.innerHTML+=`<div style="text-align:center;padding:10px;font-size:13px;color:var(--txt3);font-style:italic">The quest was abandoned after 3 attempts.</div>`;
+    appendNextQuestBtn();
+    return;
+  }
+  // Reduced difficulty for next attempt
+  const reducedStars=Math.max(1,stars-1);
+  const reducedDanger=danger*0.6;
+  // Pick a new hero not already used
+  const newHero=assignQuestHeroExcluding(reducedStars,usedHeroIds);
+  if(!newHero){appendNextQuestBtn();return;}
+  const newSuccess=calcQuestSuccess(newHero,{stars:reducedStars,danger:reducedDanger});
+  const content=document.getElementById("phase-content");
+  const card=content.querySelector(".quest-card");
+  const attLabel=attemptNum===1?"2nd":"3rd";
+  const retryBlock=document.createElement("div");
+  retryBlock.style.cssText="margin-top:10px;padding:10px;background:var(--bg3);border:1px solid var(--bg4);border-radius:var(--r)";
+  retryBlock.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:12px;color:var(--gold3);margin-bottom:6px">${attLabel.toUpperCase()} ATTEMPT — Reduced to ${reducedStars}★</div>
+    <div style="font-size:13px;color:var(--txt2)">A new hero steps forward: <b style="color:${regionColor(newHero.region)};font-family:'Cinzel',serif">${newHero.name}</b></div>
+    <div style="font-size:12px;color:var(--txt3);margin-top:4px">Success chance: ${Math.round(newSuccess)}%</div>`;
+  card.appendChild(retryBlock);
+  const retryBtn=document.createElement("button");
+  retryBtn.className="btn btn-gold";retryBtn.style.cssText="width:100%;margin-top:8px";
+  retryBtn.textContent=`⚔ ${attLabel} Attempt`;
+  retryBtn.dataset.heroId=newHero.id;
+  retryBtn.dataset.quest=questName;
+  retryBtn.dataset.success=newSuccess;
+  retryBtn.dataset.danger=reducedDanger;
+  retryBtn.dataset.stars=reducedStars;
+  retryBtn.dataset.attempt=attemptNum+1;
+  retryBtn.dataset.usedIds=usedHeroIds.join(",");
+  retryBtn.onclick=function(){
+    const d=this.dataset;
+    const usedArr=d.usedIds?d.usedIds.split(",").map(Number):[];
+    resolveSpecialQuest(d.heroId,d.quest,parseFloat(d.success),parseFloat(d.danger),parseInt(d.stars),parseInt(d.attempt),usedArr);
+  };
+  retryBlock.appendChild(retryBtn);
+}
+
+function appendNextQuestBtn(){
+  const content=document.getElementById("phase-content");
+  const card=content.querySelector(".quest-card");
+  if(!card)return;
+  card.querySelectorAll("button").forEach(b=>b.remove());
+  const btn=document.createElement("button");
+  btn.className="btn btn-gold";btn.style="width:100%;margin-top:10px";
+  btn.textContent=sqIdx<sqQueue.length-1?"Next Quest ▶":"Complete Quest Phase ▶";
+  btn.onclick=()=>{sqIdx++;renderSpecialQuestScreen();};
+  card.appendChild(btn);
+}
+
+function assignQuestHeroExcluding(stars,excludeIds){
+  const excludeSet=new Set(excludeIds.map(Number));
+  const minLevel=stars<=1?1:stars<=2?3:stars<=3?6:stars<=4?10:15;
+  const active=S.warriors.filter(w=>w.alive&&!w.retired&&!excludeSet.has(w.id)&&w.level>=Math.max(1,minLevel-2));
+  if(!active.length)return null;
+  const total=active.reduce((s,w)=>s+w.level+w.fame/50,0);
+  let r=Math.random()*total;
+  for(const w of active){r-=w.level+w.fame/50;if(r<=0)return w;}
+  return active[active.length-1];
+}
+
+// ══════════════════════════════════════════════════════════════
+// XP & LEVELLING
+// ══════════════════════════════════════════════════════════════
+function gainXP(warrior,baseAmount){
+  const mult=ageGrowthMult(warrior.age);
+  if(mult<=0)return;
+  const amount=Math.round(baseAmount*mult);
+  warrior.xp=(warrior.xp||0)+amount;
+  while(warrior.xp>=xpToLevel(warrior.level)&&warrior.level<30){
+    warrior.xp-=xpToLevel(warrior.level);
+    warrior.level++;
+    const wts=CLASS_WEIGHTS[warrior.cls]||CLASS_WEIGHTS.warrior;
+    const total=Object.values(wts).reduce((a,b)=>a+b,0);
+    const pts=Math.round(rand(3,6)*Math.min(1,mult));
+    for(let i=0;i<Math.max(1,pts);i++){
+      let r=Math.random()*total;
+      for(const k of STAT_KEYS){r-=wts[k];if(r<=0){warrior.stats[k]=clamp(warrior.stats[k]+1,1,100);break;}}
+    }
+    if(warrior.level===15||warrior.level===25||warrior.level===35)awardSkill(warrior,false);
+    warrior.name=displayName(warrior);
+  }
+}
+
+function gainXPWithLog(warrior,baseAmount){
+  const oldLevel=warrior.level;
+  gainXP(warrior,baseAmount);
+  for(let lv=oldLevel+1;lv<=warrior.level;lv++){
+    // Deduplicate — don't log the same warrior+level twice
+    if(levelUpLog.some(e=>e.warrior.id===warrior.id&&e.level===lv))continue;
+    const title=getTitlePrefix(lv).trim();
+    let msg=`⬆️ ${warrior.baseName} reached Level ${lv}!`;
+    if(title&&lv%10===0)msg+=` Now known as ${warrior.name}.`;
+    if(lv===15||lv===25||lv===35){
+      const skill=warrior.specialSkills[warrior.specialSkills.length-1];
+      if(skill)msg+=` Learned: ${skill.name}!`;
+    }
+    levelUpLog.push({warrior,msg,level:lv});
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// YEAR END
+// ══════════════════════════════════════════════════════════════
+function endYear(){
+  S.year++;
+  S.phase="start";
+  S.currentYearData={training:null,regional:null,basicQuests:null,specialQuests:null,tournament:null,newWarriors:null};
+  tournamentState={phase:"idle",participants:[],rumbleFighters:[],bracket:[],currentMatch:null,round:0,results:[],champion:null,rumbleRemaining:[]};
+  sqIdx=0;sqQueue=[];S.sqRunning=false;rumbleEliminated=new Set();
+  levelUpLog=[];
+  autoSave();
+  document.getElementById("cur-year").textContent=S.year;
+  renderCurrentYear();
+  renderWarriors();
+  renderRegions();
+  toast("Year "+S.year+" begins!");
+}
+
+// ══════════════════════════════════════════════════════════════
+// GRAND TOURNAMENT ENGINE
+// ══════════════════════════════════════════════════════════════
+function startGrandTournament(){
+  S.phase="tournament";
+  document.getElementById("btn-advance").style.display="none";
+  buildTournamentRoster();
+  renderCurrentYear();
+}
+
+function buildTournamentRoster(){
+  const active=S.warriors.filter(w=>w.alive&&!w.retired);
+  // Top 3 by fame per region
+  const qualified=[];
+  Object.keys(REGIONS).forEach(rid=>{
+    const regional=active.filter(w=>w.region===rid).sort((a,b)=>b.fame-a.fame).slice(0,3);
+    qualified.push(...regional);
+  });
+  // 2 wild cards: highest ovr among non-qualified
+  const qualIds=new Set(qualified.map(w=>w.id));
+  const wildcards=active.filter(w=>!qualIds.has(w.id)).sort((a,b)=>ovr(b.stats)-ovr(a.stats)).slice(0,2);
+  const allParticipants=[...qualified,...wildcards].slice(0,20);
+  // Sort by fame — bottom 5 go to royal rumble
+  allParticipants.sort((a,b)=>a.fame-b.fame);
+  const rumble=allParticipants.slice(0,5);
+  const seeded=allParticipants.slice(5);
+  tournamentState={
+    phase:"rumble",
+    participants:allParticipants,
+    rumbleFighters:shuffle(rumble),
+    seeded:shuffle(seeded),
+    bracket:[],currentMatch:0,currentRound:0,
+    results:[],champion:null,
+    rumbleRemaining:[...shuffle(rumble)],
+    rumbleWinner:null
+  };
+  S.currentYearData.tournament=tournamentState;
+}
+
+function renderTournamentPhase(){
+  const content=document.getElementById("phase-content");
+  if(!content)return;
+  if(tournamentState.phase==="rumble") renderRumble(content);
+  else if(tournamentState.phase==="bracket") renderBracketPhase(content);
+  else if(tournamentState.phase==="complete") renderTournamentComplete(content);
+}
+
+// ── ROYAL RUMBLE ──────────────────────────────────────────────
+function renderRumble(container){
+  const fighters=tournamentState.rumbleRemaining;
+  rumbleEliminated=new Set();
+  rumbleCurrentWinner=fighters[0];
+  container.innerHTML=`
+    <div class="sec">⚔ ROYAL RUMBLE — 5 fighters, last standing qualifies</div>
+    <div id="rumble-fighters" class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:12px">
+      ${fighters.map(f=>`<div class="tag" id="rf-${f.id}" style="color:${regionColor(f.region)};font-family:'Cinzel',serif">${f.name}</div>`).join("")}
+    </div>
+    <div id="rumble-arena"></div>`;
+  runRumbleFight();
+}
+
+function runRumbleFight(){
+  const fighters=tournamentState.rumbleRemaining;
+  const nextContender=fighters.find(f=>!rumbleEliminated.has(f.id)&&f.id!==rumbleCurrentWinner.id)||null;
+  if(!nextContender){
+    // Rumble over
+    tournamentState.rumbleWinner=rumbleCurrentWinner;
+    rumbleCurrentWinner.fame+=rand(25,40);
+    const bracket=[...tournamentState.seeded,rumbleCurrentWinner];
+    tournamentState.seeded=shuffle(bracket);
+    tournamentState.phase="bracket";
+    buildBracket();
+    return;
+  }
+  const a=rumbleCurrentWinner,b=nextContender;
+  startCombat(a,b,"Royal Rumble",()=>{
+    const winner=combatResult.winner;
+    const loser=winner===a?b:a;
+    winner.fame+=rand(10,20);winner.career.fights++;winner.career.wins++;
+    loser.fame+=rand(2,6);loser.career.fights++;
+    gainXPWithLog(winner,15);gainXPWithLog(loser,5);
+    rumbleEliminated.add(loser.id);
+    rumbleCurrentWinner=winner;
+    const el=document.getElementById("rf-"+loser.id);
+    if(el)el.style.cssText="text-decoration:line-through;opacity:.35;font-family:'Cinzel',serif";
+    const remaining=fighters.filter(f=>!rumbleEliminated.has(f.id)&&f.id!==winner.id);
+    const nextBtn=document.createElement("button");
+    nextBtn.className="btn btn-gold";nextBtn.style.cssText="width:100%;margin-top:10px";
+    nextBtn.textContent=remaining.length>0?`Next Challenger: ${remaining[0].name} \u25ba`:"End Rumble \u2014 Begin Bracket \u25ba";
+    nextBtn.onclick=()=>{document.getElementById("rumble-arena").innerHTML="";runRumbleFight();};
+    document.getElementById("rumble-arena").appendChild(nextBtn);
+  });
+}
+
+// ── BRACKET ───────────────────────────────────────────────────
+function buildBracket(){
+  const fighters=tournamentState.seeded.slice(0,16);
+  while(fighters.length<16)fighters.push(fighters[fighters.length-1]);
+  const r16=[];
+  for(let i=0;i<fighters.length;i+=2)r16.push({a:fighters[i],b:fighters[i+1],winner:null,loser:null});
+  tournamentState.bracket=[{name:"Round of 16",matches:r16}];
+  tournamentState.currentRound=0;
+  tournamentState.currentMatch=0;
+  renderBracketPhase(document.getElementById("phase-content"));
+}
+
+function renderBracketPhase(container){
+  if(!container)return;
+  const rounds=tournamentState.bracket;
+  const curRound=rounds[tournamentState.currentRound];
+  const nextMatch=curRound?.matches[tournamentState.currentMatch];
+  container.innerHTML=`
+    <div class="sec">⚔ GRAND TOURNAMENT BRACKET</div>
+    <div class="bracket-wrap" style="margin-bottom:12px">
+      <div class="bracket-rounds">
+        ${rounds.map((r,ri)=>`
+          <div class="bracket-round-col">
+            <div class="bracket-round-title">${r.name}</div>
+            ${r.matches.map((m,mi)=>`
+              <div class="bracket-match">
+                <div class="bracket-fighter ${m.winner===m.a?"winner":m.winner?"loser":""}">${m.a?.name||"TBD"}</div>
+                <div class="bracket-fighter ${m.winner===m.b?"winner":m.winner?"loser":""}">${m.b?.name||"TBD"}</div>
+              </div>`).join("")}
+          </div>`).join("")}
+      </div>
+    </div>
+    <div id="bracket-arena"></div>
+    ${nextMatch&&!nextMatch.winner?`<button class="btn btn-gold" style="width:100%" onclick="runBracketMatch()">⚔ Fight: ${nextMatch.a?.name} vs ${nextMatch.b?.name}</button>`:""}`;
+}
+
+function runBracketMatch(){
+  const rounds=tournamentState.bracket;
+  const round=rounds[tournamentState.currentRound];
+  const match=round.matches[tournamentState.currentMatch];
+  if(!match||match.winner)return;
+  document.querySelector("#phase-content .btn-gold")?.remove();
+  startCombat(match.a,match.b,round.name,()=>{
+    match.winner=combatResult.winner;
+    match.loser=combatResult.winner===match.a?match.b:match.a;
+    match.winner.fame+=rand(15,30);match.winner.career.fights++;match.winner.career.wins++;
+    match.loser.fame+=rand(5,10);match.loser.career.fights++;
+    gainXPWithLog(match.winner,20);gainXPWithLog(match.loser,8);autoSave();
+    // Small death chance for loser
+    if(Math.random()<0.06){match.loser.alive=false;match.loser.diedInYear=S.year;}
+    tournamentState.currentMatch++;
+    if(tournamentState.currentMatch>=round.matches.length) advanceBracketRound();
+    const nextBtn=document.createElement("button");
+    nextBtn.className="btn btn-gold";nextBtn.style.cssText="width:100%;margin-top:10px";
+    const nextMatch=tournamentState.bracket[tournamentState.currentRound]?.matches[tournamentState.currentMatch];
+    if(tournamentState.phase==="complete"){
+      nextBtn.textContent="\u{1F3C6} View Champion";
+      nextBtn.onclick=()=>renderTournamentComplete(document.getElementById("phase-content"));
+    } else if(nextMatch){
+      nextBtn.textContent=`Next Fight: ${nextMatch.a?.name} vs ${nextMatch.b?.name} \u25ba`;
+      nextBtn.onclick=()=>{document.getElementById("bracket-arena").innerHTML="";renderBracketPhase(document.getElementById("phase-content"));};
+    }
+    document.getElementById("bracket-arena")?.appendChild(nextBtn);
+  });
+}
+
+function advanceBracketRound(){
+  const rounds=tournamentState.bracket;
+  const round=rounds[tournamentState.currentRound];
+  const winners=round.matches.map(m=>m.winner).filter(Boolean);
+  if(winners.length===1){
+    // Champion!
+    tournamentState.champion=winners[0];
+    winners[0].fame+=rand(120,180);winners[0].career.grandTitles++;gainXPWithLog(winners[0],50);
+    // Log world tournament result for every participant
+    (tournamentState.participants||[]).forEach(w=>{
+      const yl=w.career.yearLog=w.career.yearLog||[];
+      const entry=yl.find(e=>e.year===S.year);
+      let bestRound="Royal Rumble";
+      if(w===winners[0])bestRound="Winner \u{1F3C6}";
+      else{
+        const rOrder=["Royal Rumble","Round of 16","Quarter-Finals","Semi-Finals","Final"];
+        rounds.forEach(r=>r.matches.forEach(m=>{
+          if(m.loser===w||m.winner===w){
+            const ri=rOrder.indexOf(r.name);const ci=rOrder.indexOf(bestRound);
+            if(ri>ci)bestRound=r.name;
+          }
+        }));
+      }
+      if(entry)entry.worldTournament=bestRound;
+      else yl.push({year:S.year,worldTournament:bestRound});
+    });
+    S.history.push({year:S.year,champion:winners[0].name,championRegion:winners[0].region,bracket:JSON.parse(JSON.stringify(rounds)),specialQuests:S.currentYearData.specialQuests||[]});
+    tournamentState.phase="complete";
+    S.phase="year_end";
+    autoSave();
+    renderCurrentYear();
+    return;
+  }
+  // Build next round
+  const nextMatches=[];
+  for(let i=0;i<winners.length;i+=2)nextMatches.push({a:winners[i],b:winners[i+1]||winners[i],winner:null,loser:null});
+  const roundName=winners.length===8?"Quarter-Finals":winners.length===4?"Semi-Finals":winners.length===2?"Final":"Round";
+  rounds.push({name:roundName,matches:nextMatches});
+  tournamentState.currentRound++;
+  tournamentState.currentMatch=0;
+}
+
+function renderTournamentComplete(container){
+
+  const champ=tournamentState.champion;
+  if(!champ){container.innerHTML="<div class='empty'>Tournament not complete</div>";return;}
+
+  // Top 3 most famed active warriors
+  const topFamed=[...S.warriors].filter(w=>w.alive&&!w.retired).sort((a,b)=>b.fame-a.fame).slice(0,3);
+
+  // Top completed special quests by stars
+  const topQuests=(S.currentYearData.specialQuests||[]).filter(q=>q.success).sort((a,b)=>b.quest.stars-a.quest.stars).slice(0,3);
+
+  // Level-up events this year
+  const lvlEvents=levelUpLog.slice(-5);
+
+  container.innerHTML=`
+    <div style="background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--gold);border-radius:var(--R);padding:20px;text-align:center;margin-bottom:10px">
+      <div style="font-size:44px;margin-bottom:6px">🏆</div>
+      <div style="font-family:'Cinzel',serif;font-size:22px;color:var(--gold2);font-weight:900">CHAMPION OF CHAMPIONS</div>
+      <div style="font-size:15px;color:var(--gold);font-family:'Cinzel',serif;margin-top:6px">${champ.name}</div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:3px">${REGIONS[champ.region]?.short||""} · ${champ.cls} · Level ${champ.level} · ⚡${champ.fame} Fame</div>
+    </div>
+
+    ${topFamed.length?`
+    <div class="sec">🌟 MOST FAMED WARRIORS</div>
+    ${topFamed.map((w,i)=>`<div class="card" style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:4px;cursor:pointer" onclick="openHeroModal(${w.id})">
+      <div style="font-family:'Cinzel',serif;font-size:18px;color:var(--gold3);width:24px">${i+1}</div>
+      <div style="flex:1">
+        <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold2)">${w.name}</div>
+        <div style="font-size:11px;color:var(--txt2)">${REGIONS[w.region]?.short||""} · ${w.cls} · Lv ${w.level}</div>
+      </div>
+      <div style="text-align:right">
+        <span class="badge badge-${tierOf(w.fame)}">${tierLabel(w.fame)}</span>
+        <div style="font-size:12px;color:var(--gold3);margin-top:2px">⚡ ${w.fame}</div>
+      </div>
+    </div>`).join("")}`:""}
+
+    ${topQuests.length?`
+    <div class="sec">🐉 GREATEST QUESTS COMPLETED</div>
+    ${topQuests.map(q=>`<div class="card" style="margin-bottom:4px;padding:8px 12px">
+      <div class="row"><span style="font-size:12px;color:var(--gold2)">${q.quest.name}</span><span class="spacer"></span><span style="color:var(--legendary);font-size:11px">${"★".repeat(q.quest.stars)}</span></div>
+      <div style="font-size:11px;color:var(--txt2);margin-top:2px">Completed by ${q.hero.name}</div>
+    </div>`).join("")}`:""}
+
+    ${lvlEvents.length?`
+    <div class="sec">⬆️ HERO MILESTONES</div>
+    ${lvlEvents.map(e=>`<div style="font-size:12px;color:var(--uncommon);padding:4px 0;border-bottom:1px solid var(--bg4)">${e.msg}</div>`).join("")}`:""}
+
+    <button class="btn btn-gold" style="width:100%;margin-top:14px" onclick="endYear()">Begin Year ${S.year+1} ▶</button>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// TURN-BASED COMBAT ENGINE
+// ══════════════════════════════════════════════════════════════
+let combatResult={winner:null,loser:null,log:[]};
+let combatCallback=null;
+let combatState={};
+
+function startCombat(a,b,roundName,cb){
+  combatCallback=cb;
+  combatResult={winner:null,loser:null,log:[]};
+  const maxHpA=50+Math.round(a.stats.endurance*0.5);
+  const maxHpB=50+Math.round(b.stats.endurance*0.5);
+  combatState={
+    a,b,roundName,
+    hpA:maxHpA,hpB:maxHpB,maxHpA,maxHpB,
+    stamA:a.stats.stamina,stamB:b.stats.stamina,
+    turn:0,log:[],done:false,
+    frozenA:0,frozenB:0,
+    shieldA:null,shieldB:null,
+    boostA:null,boostB:null,
+    poisonA:null,poisonB:null
+  };
+  renderCombatArena();
+  runNextTurn();
+}
+
+function renderCombatArena(){
+  const cs=combatState;
+  const container=document.getElementById("bracket-arena")||document.getElementById("rumble-arena");
+  if(!container)return;
+  container.innerHTML=`
+    <div class="combat-arena">
+      <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold3);letter-spacing:.1em;text-align:center;margin-bottom:12px">${cs.roundName.toUpperCase()}</div>
+      <div class="fighters-display">
+        <div class="fighter-side">
+          <div class="fighter-name-big" style="color:${regionColor(cs.a.region)}">${cs.a.name}</div>
+          <div class="fighter-class-tag">${cs.a.cls} · Lv ${cs.a.level}</div>
+          <div class="hp-bar-wrap"><div class="hp-bar" id="hp-a" style="width:100%"></div></div>
+          <div class="hp-text" id="hp-text-a">${cs.hpA}/${cs.maxHpA} HP</div>
+          <div class="stamina-bar-wrap"><div class="stamina-bar" id="stam-a" style="width:100%"></div></div>
+          <div style="font-size:10px;color:var(--txt3)">Stamina</div>
+          ${cs.a.specialSkills?.length?`<div style="font-size:10px;color:var(--gold3);margin-top:3px">Skills: ${cs.a.specialSkills.map(s=>s.name).join(", ")}</div>`:""}
+        </div>
+        <div class="vs-divider">⚔</div>
+        <div class="fighter-side right">
+          <div class="fighter-name-big" style="color:${regionColor(cs.b.region)}">${cs.b.name}</div>
+          <div class="fighter-class-tag">${cs.b.cls} · Lv ${cs.b.level}</div>
+          <div class="hp-bar-wrap"><div class="hp-bar" id="hp-b" style="width:100%"></div></div>
+          <div class="hp-text" id="hp-text-b">${cs.hpB}/${cs.maxHpB} HP</div>
+          <div class="stamina-bar-wrap"><div class="stamina-bar" id="stam-b" style="width:100%"></div></div>
+          <div style="font-size:10px;color:var(--txt3)">Stamina</div>
+          ${cs.b.specialSkills?.length?`<div style="font-size:10px;color:var(--gold3);margin-top:3px">Skills: ${cs.b.specialSkills.map(s=>s.name).join(", ")}</div>`:""}
+        </div>
+      </div>
+      <div class="combat-log" id="combat-log"></div>
+      <div style="margin-top:8px;text-align:center">
+        <button class="btn btn-sm" style="font-size:11px;opacity:.6" onclick="instantFinishCombat()">⚡ Instant Finish</button>
+      </div>
+    </div>`;
+}
+
+function updateCombatUI(){
+  const cs=combatState;
+  const pctA=Math.max(0,(cs.hpA/cs.maxHpA)*100);
+  const pctB=Math.max(0,(cs.hpB/cs.maxHpB)*100);
+  const stamPctA=Math.max(0,(cs.stamA/(cs.a.stats.stamina||1))*100);
+  const stamPctB=Math.max(0,(cs.stamB/(cs.b.stats.stamina||1))*100);
+  const hpa=document.getElementById("hp-a");const hpb=document.getElementById("hp-b");
+  const hpta=document.getElementById("hp-text-a");const hptb=document.getElementById("hp-text-b");
+  const sa=document.getElementById("stam-a");const sb=document.getElementById("stam-b");
+  if(hpa)hpa.style.width=pctA+"%";
+  if(hpb)hpb.style.width=pctB+"%";
+  if(hpta)hpta.textContent=`${Math.max(0,cs.hpA)}/${cs.maxHpA} HP`;
+  if(hptb)hptb.textContent=`${Math.max(0,cs.hpB)}/${cs.maxHpB} HP`;
+  if(sa)sa.style.width=stamPctA+"%";
+  if(sb)sb.style.width=stamPctB+"%";
+}
+
+function addLogLine(txt,cls=""){
+  const log=document.getElementById("combat-log");
+  if(!log)return;
+  const div=document.createElement("div");
+  div.className="log-line "+(cls||"");
+  div.textContent=txt;
+  log.appendChild(div);
+  log.scrollTop=log.scrollHeight;
+  combatState.log.push({txt,cls});
+}
+
+// Class matchup modifiers (rock-paper-scissors)
+function classModifier(attCls,defCls){
+  if(attCls===defCls)return 1.0;
+  if(attCls==="warrior"&&defCls==="ranged")return 1.25;
+  if(attCls==="ranged"&&defCls==="stealth")return 1.25;
+  if(attCls==="stealth"&&defCls==="warrior")return 1.25;
+  if(attCls==="warrior"&&defCls==="stealth")return 0.80;
+  if(attCls==="ranged"&&defCls==="warrior")return 0.80;
+  if(attCls==="stealth"&&defCls==="ranged")return 0.80;
+  // Priest: strong vs mage, weak vs everyone else
+  if(attCls==="priest"&&defCls==="mage")return 1.40;
+  if(attCls==="priest")return 0.75;
+  if(defCls==="priest"&&attCls==="mage")return 0.70;// mage weak against priest
+  if(defCls==="priest")return 1.20;// others strong against priest
+  return 1.0;
+}
+function strikeCalc(att,def,stamMod){
+  const usesMagic=(att.cls==="mage")||(att.stats.magic>att.stats.strength+10&&Math.random()<0.6);
+  const rawAtk=usesMagic?att.stats.magic:att.stats.strength;
+  const defVal=def.stats.defenseSkill*0.35+def.stats.endurance*0.10;
+  const base=rawAtk*0.45-defVal+rand(-4,6);
+  const cls=classModifier(att.cls,def.cls);
+  const dmg=Math.max(1,Math.round(Math.max(2,base)*stamMod*cls));
+  const clsNote=cls>1?" (advantage!)":cls<1?" (disadvantage)":"";
+  return{dmg,usesMagic,clsNote};
+}
+function runNextTurn(){
+  const cs=combatState;
+  if(cs.done)return;
+  cs.turn++;
+  // Speed determines who strikes first — both attack every turn
+  const spA=cs.a.stats.speed+rand(-8,8);
+  const spB=cs.b.stats.speed+rand(-8,8);
+  const [first,second]=spA>=spB?[cs.a,cs.b]:[cs.b,cs.a];
+  // Stamina modifiers
+  const stamPctA=cs.stamA/cs.a.stats.stamina;
+  const stamPctB=cs.stamB/cs.b.stats.stamina;
+  const stamMod=(pct)=>cs.turn<=3?1:pct>0.6?1:pct>0.35?0.82:0.65;
+  const smFirst=first===cs.a?stamMod(stamPctA):stamMod(stamPctB);
+  const smSecond=second===cs.a?stamMod(stamPctA):stamMod(stamPctB);
+  // First attacker strikes
+  {
+    const frozen=first===cs.a?(cs.frozenA||0):(cs.frozenB||0);
+    if(frozen>0){
+      if(first===cs.a)cs.frozenA=Math.max(0,(cs.frozenA||0)-1);else cs.frozenB=Math.max(0,(cs.frozenB||0)-1);
+      addLogLine(`${first.name} is frozen and cannot act!`,"miss");
+    } else {
+      const boost=first===cs.a?(cs.boostA?.power||0):(cs.boostB?.power||0);
+      const shield=second===cs.a?(cs.shieldA?.power||0):(cs.shieldB?.power||0);
+      const {dmg,usesMagic,clsNote}=strikeCalc(first,second,smFirst*(1+boost));
+      const finalDmg=Math.max(1,Math.round(dmg*(1-shield)));
+      if(first===cs.a)cs.hpB-=finalDmg;else cs.hpA-=finalDmg;
+      const rem=Math.max(0,first===cs.a?cs.hpB:cs.hpA);
+      addLogLine(`${first.name} ${usesMagic?"casts":"strikes"}: -${finalDmg}hp${clsNote} → ${second.name} ${rem}HP`,"hit");
+      // Skill activation
+      if(first.specialSkills?.length&&Math.random()<0.5){
+        const skill=pick(first.specialSkills);
+        const result=applySkill(skill,first,second,cs);
+        if(result){if(result.dmgDone>0){if(first===cs.a)cs.hpB-=result.dmgDone;else cs.hpA-=result.dmgDone;}addLogLine(result.msg,"special");}
+      }
+    }
+  }
+  // Check if second still standing
+  if(cs.hpA<=0||cs.hpB<=0){finishCombat();return;}
+  // Second counter-strikes
+  {
+    const frozen=second===cs.a?(cs.frozenA||0):(cs.frozenB||0);
+    if(frozen>0){
+      if(second===cs.a)cs.frozenA=Math.max(0,(cs.frozenA||0)-1);else cs.frozenB=Math.max(0,(cs.frozenB||0)-1);
+      addLogLine(`${second.name} is frozen and cannot act!`,"miss");
+    } else {
+      const boost=second===cs.a?(cs.boostA?.power||0):(cs.boostB?.power||0);
+      const shield=first===cs.a?(cs.shieldA?.power||0):(cs.shieldB?.power||0);
+      const {dmg,usesMagic,clsNote}=strikeCalc(second,first,smSecond*(1+boost));
+      const finalDmg=Math.max(1,Math.round(dmg*(1-shield)));
+      if(second===cs.a)cs.hpB-=finalDmg;else cs.hpA-=finalDmg;
+      const rem=Math.max(0,second===cs.a?cs.hpB:cs.hpA);
+      addLogLine(`${second.name} counter-${usesMagic?"spells":"attacks"}: -${finalDmg}hp${clsNote} → ${first.name} ${rem}HP`,"hit");
+      if(second.specialSkills?.length&&Math.random()<0.5){
+        const skill=pick(second.specialSkills);
+        const result=applySkill(skill,second,first,cs);
+        if(result){if(result.dmgDone>0){if(second===cs.a)cs.hpB-=result.dmgDone;else cs.hpA-=result.dmgDone;}addLogLine(result.msg,"special");}
+      }
+    }
+  }
+  // Both drain stamina
+  cs.stamA=Math.max(0,cs.stamA-rand(5,9));
+  cs.stamB=Math.max(0,cs.stamB-rand(5,9));
+  updateCombatUI();
+  if(cs.hpA<=0||cs.hpB<=0){finishCombat();return;}
+  if(cs.turn>=25){
+    const winner=cs.hpA>=cs.hpB?cs.a:cs.b;
+    const loser=winner===cs.a?cs.b:cs.a;
+    combatResult={winner,loser,log:cs.log};
+    addLogLine(`⚔ ${winner.name} outlasts ${loser.name}!`,"system");
+    setTimeout(()=>{if(combatCallback)combatCallback();},800);
+    return;
+  }
+  setTimeout(runNextTurn,1000);
+}
+function instantFinishCombat(){
+  if(combatState.done)return;
+  combatState.done=true;
+  while(combatState.turn<25){
+    combatState.turn++;
+    const spA=combatState.a.stats.speed+rand(-8,8);
+    const spB=combatState.b.stats.speed+rand(-8,8);
+    const [first,second]=spA>=spB?[combatState.a,combatState.b]:[combatState.b,combatState.a];
+    const smF=first===combatState.a?(combatState.stamA/Math.max(1,combatState.a.stats.stamina)):(combatState.stamB/Math.max(1,combatState.b.stats.stamina));
+    const smS=second===combatState.a?(combatState.stamA/Math.max(1,combatState.a.stats.stamina)):(combatState.stamB/Math.max(1,combatState.b.stats.stamina));
+    const d1=strikeCalc(first,second,smF);
+    if(first===combatState.a)combatState.hpB-=d1.dmg;else combatState.hpA-=d1.dmg;
+    if(combatState.hpA<=0||combatState.hpB<=0)break;
+    const d2=strikeCalc(second,first,smS);
+    if(second===combatState.a)combatState.hpB-=d2.dmg;else combatState.hpA-=d2.dmg;
+    if(combatState.hpA<=0||combatState.hpB<=0)break;
+    combatState.stamA=Math.max(0,combatState.stamA-rand(5,9));
+    combatState.stamB=Math.max(0,combatState.stamB-rand(5,9));
+  }
+  const winner=combatState.hpA>=combatState.hpB?combatState.a:combatState.b;
+  const loser=winner===combatState.a?combatState.b:combatState.a;
+  combatResult={winner,loser,log:combatState.log};
+  addLogLine(`⚡ ${winner.name} wins!`,"system");
+  updateCombatUI();
+  combatState.done=true;
+  setTimeout(()=>{if(combatCallback)combatCallback();},300);
+}
+function finishCombat(){
+  const cs=combatState;cs.done=true;
+  const winner=cs.hpA>0?cs.a:cs.b;
+  const loser=winner===cs.a?cs.b:cs.a;
+  combatResult={winner,loser,log:cs.log};
+  addLogLine(`⚔ ${winner.name} defeats ${loser.name}!`,"system");
+  // Show level-ups in log
+  levelUpLog.filter(e=>e.warrior===winner||e.warrior===loser).forEach(e=>{
+    addLogLine(e.msg,"special");
+  });
+  updateCombatUI();
+  setTimeout(()=>{if(combatCallback)combatCallback();},800);
+}
+
+function renderCurrentYear(){
+  document.getElementById("phase-year").textContent=S.year;
+  document.getElementById("cur-year").textContent=S.year;
+  const phases=["start","training","regional","basic_quests","special_quests","tournament","year_end"];
+  const labels={start:"New Warriors Announced",training:"Training Season",regional:"Regional Tournaments",
+    basic_quests:"Basic Quests",special_quests:"Special Quests",tournament:"Grand Tournament",year_end:"Year Complete"};
+  const icons={start:"\u{1F6E1}",training:"\u2694",regional:"\u{1F3DF}",basic_quests:"\u{1F4CB}",special_quests:"\u{1F409}",tournament:"\u{1F3C6}",year_end:"\u{1F396}"};
+  const phaseIdx=phases.indexOf(S.phase);
+  document.getElementById("phase-steps").innerHTML=phases.map((p,i)=>{
+    const done=i<phaseIdx;const active=i===phaseIdx;
+    const clickable=done||active;
+    return`<div class="phase-step ${done?"done":active?"active-step":"locked"}" ${clickable?`onclick="showPhaseDetail('${p}')"`:""}>
+      <div class="step-num">${done?"\u2713":i+1}</div>
+      <div><div class="step-title">${icons[p]||""} ${labels[p]}</div>
+      <div class="step-sub">${done?"Completed \u2014 click to review":active?"In Progress":"Pending"}</div></div>
+    </div>`;
+  }).join("");
+  // Show content for CURRENT phase
+  if(S.sqRunning){
+    // Special quests running — don't wipe the quest screen, just sync button
+    syncButton();
+    return;
+  } else if(S.phase==="tournament"){
+    if(tournamentState.phase!=="idle")renderTournamentPhase();
+    else document.getElementById("phase-content").innerHTML="";
+  } else if(S.phase==="year_end"){
+    renderTournamentComplete(document.getElementById("phase-content"));
+  } else {
+    // Content is set by advancePhase explicitly after data is populated
+    // Only auto-fill when restoring from save (no data in flight)
+    const hasData = S.currentYearData.training||S.currentYearData.regional||
+      S.currentYearData.basicQuests||(S.currentYearData.specialQuests&&S.currentYearData.specialQuests.length)||
+      S.currentYearData.newWarriors;
+    if(hasData) showPhaseDetail(S.phase);
+    else document.getElementById("phase-content").innerHTML="";
+  }
+  // Button state - use syncButton to keep consistent with restoreCurrentView
+  syncButton();
+}
+
+
+function showPhaseDetail(phase){
+  const content=document.getElementById("phase-content");
+  if(!content)return;
+  if(phase==="start"){
+    const yd=S.currentYearData.newWarriors;
+    if(!yd){content.innerHTML=`<div class="empty">Press Begin Year ${S.year} to start the annual cycle</div>`;return;}
+    const newW=yd.new||[];const retired=yd.retired||[];const died=yd.died||[];
+    let html=`<div style="font-family:'Cinzel',serif;font-size:18px;color:var(--gold2);text-align:center;padding:12px 0 6px">Year ${S.year} Begins</div>`;
+    if(died.length){html+=`<div class="sec">\u26B0 FALLEN \u2014 died last year (${died.length})</div>`;html+=died.map(w=>`<div class="card" style="border-left:3px solid var(--red);padding:8px 12px;margin-bottom:4px;cursor:pointer;opacity:.8" onclick="openHeroModal(${w.id})"><div style="font-family:'Cinzel',serif;font-size:13px;color:var(--red2)">${w.name}</div><div style="font-size:11px;color:var(--txt3)">${REGIONS[w.region].short} \u00B7 ${w.cls} \u00B7 Age ${w.age} \u00B7 \u26A1${w.fame} Fame</div></div>`).join("");}
+    if(retired.length){html+=`<div class="sec">\u{1F3C5} RETIRED \u2014 this year (${retired.length})</div>`;html+=retired.map(w=>`<div class="card" style="border-left:3px solid var(--txt3);padding:8px 12px;margin-bottom:4px;cursor:pointer;opacity:.75" onclick="openHeroModal(${w.id})"><div class="row"><span style="font-family:'Cinzel',serif;font-size:13px;color:var(--txt2)">${w.name}</span><span class="badge badge-${tierOf(w.fame)}">${tierLabel(w.fame)}</span></div><div style="font-size:11px;color:var(--txt3)">${REGIONS[w.region].short} \u00B7 ${w.cls} \u00B7 Age ${w.age} \u00B7 \u26A1${w.fame} Fame \u00B7 ${w.career.grandTitles} titles</div></div>`).join("");}
+    if(newW.length){html+=`<div class="sec">\u{1F31F} NEW HEROES \u2014 joined this year (${newW.length})</div>`;html+=newW.map(w=>`<div class="hero-card common" onclick="openHeroModal(${w.id})"><div class="row"><span class="hero-name">${w.name}</span><span class="badge badge-common">Rookie</span></div><div class="hero-meta">${REGIONS[w.region].short} \u00B7 ${w.cls} \u00B7 Age ${w.age} \u00B7 Level ${w.level}</div></div>`).join("");}
+    if(!died.length&&!retired.length&&!newW.length)html+=`<div class="empty">No changes this year.</div>`;
+    content.innerHTML=html;
+  } else if(phase==="training"){
+    if(!S.currentYearData.training){content.innerHTML=`<div class="empty">Training not yet run</div>`;return;}
+    renderTrainingTable(content);
+  } else if(phase==="regional"){
+    if(!S.currentYearData.regional){content.innerHTML=`<div class="empty">Regional tournaments not yet run</div>`;return;}
+    regionalDetailRegion=null;renderRegionalResults(content);
+  } else if(phase==="basic_quests"){
+    if(!S.currentYearData.basicQuests){content.innerHTML=`<div class="empty">Basic quests not yet run</div>`;return;}
+    renderBasicQuestsTable(content);
+  } else if(phase==="special_quests"){
+    if(!S.currentYearData.specialQuests||!S.currentYearData.specialQuests.length){content.innerHTML=`<div class="empty">No special quests completed yet</div>`;return;}
+    renderSpecialQuestsSummary(content);
+  } else {
+    content.innerHTML=`<div class="empty">No data for this phase</div>`;
+  }
+}
+
+
+function renderTrainingTable(container){
+  const data=[...(S.currentYearData.training||[])].sort((a,b)=>b.gain-a.gain);
+  const lvlEvents=levelUpLog.slice();
+  container.innerHTML=`<div class="sec">TRAINING RESULTS — sorted by gain</div>
+    <div style="overflow-x:auto">
+    <table class="training-table">
+      <thead><tr><th>Warrior</th><th>Region</th><th>Training</th><th>Stars</th><th>Stat</th><th>Before</th><th>After</th><th>+Gain</th></tr></thead>
+      <tbody>${data.map((d,i)=>`<tr style="${i===0?"background:rgba(201,168,76,0.06)":""}">
+        <td style="color:var(--gold2);font-family:'Cinzel',serif;font-size:11px;cursor:pointer" onclick="openHeroModal(${d.warrior.id})">${d.warrior.name}</td>
+        <td style="color:${regionColor(d.warrior.region)};font-size:11px">${REGIONS[d.warrior.region].short}</td>
+        <td style="font-size:11px;color:var(--txt2)">${d.training.name}</td>
+        <td>${fmtStar(d.training.stars)}</td>
+        <td style="font-size:11px;color:var(--txt2)">${STAT_NAMES[d.stat]}</td>
+        <td style="font-size:12px;text-align:center;color:var(--txt3)">${d.oldVal}</td>
+        <td style="font-size:12px;text-align:center;color:var(--gold2)">${d.newVal}</td>
+        <td class="plus-green" style="font-size:${i===0?"15":"12"}px;font-weight:${i===0?700:400}">+${d.gain}</td>
+      </tr>`).join("")}</tbody>
+    </table></div>
+    ${lvlEvents.length?`<div class="sec" style="margin-top:12px">⬆️ LEVEL-UP EVENTS</div>`+
+      lvlEvents.map(e=>`<div style="font-size:12px;color:var(--uncommon);padding:5px 4px;border-bottom:1px solid var(--bg4)">${e.msg}</div>`).join(""):""}`;
+}
+
+function renderRegionalResults(container){
+  const data=S.currentYearData.regional||{};
+  const rids=Object.keys(data);
+  let curIdx=rids.indexOf(container.dataset?.regionIdx||rids[0])||0;
+  const renderRegion=(rid)=>{
+    const r=data[rid];const reg=REGIONS[rid];
+    // Build a visual bracket from rounds
+    const rounds=r.rounds||[];
+    let bracketHtml=`<div class="bracket-wrap"><div class="bracket-rounds">`;
+    rounds.forEach((round,ri)=>{
+      bracketHtml+=`<div class="bracket-round-col"><div class="bracket-round-title">Round ${ri+1}</div>`;
+      round.forEach(m=>{
+        bracketHtml+=`<div class="bracket-match">
+          <div class="bracket-fighter ${m.winner===m.a?"winner":"loser"}" style="font-size:11px">${m.a.name}</div>
+          <div class="bracket-fighter ${m.winner===m.b?"winner":"loser"}" style="font-size:11px">${m.b.name}</div>
+        </div>`;
+      });
+      bracketHtml+=`</div>`;
+    });
+    // Final / champion column
+    bracketHtml+=`<div class="bracket-round-col"><div class="bracket-round-title">Champion</div>
+      <div class="bracket-match" style="border:1px solid var(--gold3)">
+        <div class="bracket-fighter winner" style="font-size:12px;color:var(--gold2)">🏆 ${r.champion?.name||"?"}</div>
+      </div></div>`;
+    bracketHtml+=`</div></div>`;
+    container.innerHTML=`
+      <div class="row" style="margin-bottom:10px;gap:8px">
+        <button class="btn btn-sm" onclick="navRegion(-1)" ${curIdx===0?"disabled":""}>◀</button>
+        <div style="font-family:'Cinzel',serif;font-size:15px;color:${regionColor(rid)};flex:1;text-align:center;font-weight:700">${reg.name}</div>
+        <button class="btn btn-sm" onclick="navRegion(1)" ${curIdx===rids.length-1?"disabled":""}>▶</button>
+      </div>
+      <div style="font-size:12px;color:var(--txt2);font-style:italic;text-align:center;margin-bottom:12px">${reg.desc}</div>
+      <div class="sec">TOURNAMENT BRACKET</div>
+      ${bracketHtml}
+      <div class="sec">CHAMPION</div>
+      <div class="hero-card ${tierOf(r.champion?.fame||0)}" onclick="openHeroModal(${r.champion?.id})" style="cursor:pointer">
+        <div class="row"><span class="hero-name" style="color:var(--gold2)">🏆 ${r.champion?.name||"?"}</span>
+        <span class="badge badge-${tierOf(r.champion?.fame||0)}">${tierLabel(r.champion?.fame||0)}</span></div>
+        <div class="hero-meta">${REGIONS[r.champion?.region]?.short||""} · ${r.champion?.cls||""} · Lv ${r.champion?.level||"?"} · Fame ⚡${r.champion?.fame||0}</div>
+      </div>
+      <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--txt3)">${curIdx+1} of ${rids.length} regions</div>`;
+  };
+  window.navRegion=(dir)=>{
+    curIdx=clamp(curIdx+dir,0,rids.length-1);
+    renderRegion(rids[curIdx]);
+  };
+  renderRegion(rids[curIdx]);
+}
+
+function renderBasicQuestsTable(container){
+  // Group by hero, sum fame, sort by final fame desc
+  const data=S.currentYearData.basicQuests||[];
+  const heroMap={};
+  data.forEach(d=>{
+    const id=d.hero.id;
+    if(!heroMap[id])heroMap[id]={hero:d.hero,earned:0,quests:0};
+    heroMap[id].earned+=d.fame;heroMap[id].quests++;
+  });
+  const sorted=Object.values(heroMap).sort((a,b)=>b.hero.fame-a.hero.fame);
+  container.innerHTML=`<div class="sec">BASIC QUESTS — Heroes ranked by final fame</div>
+    <table class="training-table">
+      <thead><tr><th>#</th><th>Hero</th><th>Region</th><th>Tier</th><th>Quests</th><th>Earned</th><th>Total Fame</th></tr></thead>
+      <tbody>${sorted.map((e,i)=>`<tr>
+        <td style="font-size:11px;color:var(--txt3)">${i+1}</td>
+        <td style="color:var(--gold2);font-family:'Cinzel',serif;font-size:11px;cursor:pointer" onclick="openHeroModal(${e.hero.id})">${e.hero.name}</td>
+        <td style="color:${regionColor(e.hero.region)};font-size:11px">${REGIONS[e.hero.region].short}</td>
+        <td><span class="badge badge-${tierOf(e.hero.fame)}">${tierLabel(e.hero.fame)}</span></td>
+        <td style="text-align:center;font-size:12px">${e.quests}</td>
+        <td class="plus-green">+${e.earned}</td>
+        <td style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold2)">${e.hero.fame}</td>
+      </tr>`).join("")}</tbody>
+    </table>`;
+}
+
+function renderSpecialQuestsSummary(container){
+  const data=S.currentYearData.specialQuests||[];
+  container.innerHTML=`<div class="sec">SPECIAL QUESTS SUMMARY</div>`+
+    data.map(d=>`<div class="card">
+      <div class="row"><div class="quest-stars">${fmtStar(d.quest.stars)}</div><span style="flex:1;font-size:13px;color:var(--gold2)">${d.quest.name}</span></div>
+      <div class="row" style="margin-top:6px">
+        <span style="font-size:12px;color:var(--txt2)">Hero: <b style="color:${regionColor(d.hero.region)}">${d.hero.name}</b></span>
+        <span class="spacer"></span>
+        <span class="${d.success?"badge badge-uncommon":"badge badge-common"}">${d.died?"FALLEN":d.success?"SUCCESS":"DEFEAT"}</span>
+      </div>
+      <div style="font-size:12px;color:${d.fameChange>=0?"var(--uncommon)":"var(--red2)"};margin-top:4px">
+        ${d.fameChange>=0?"+":""}${d.fameChange} Fame
+      </div>
+    </div>`).join("")||`<div class="empty">No special quests completed</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// WARRIORS TAB
+// ══════════════════════════════════════════════════════════════
+function renderWarriors(){
+  const filter=document.getElementById("warriors-filter")?.value||"all";
+  const status=document.getElementById("warriors-status")?.value||"active";
+  const sort=document.getElementById("warriors-sort")?.value||"fame";
+  const warriors=S.warriors.filter(w=>{
+    if(filter!=="all"&&w.region!==filter)return false;
+    if(status==="active")return w.alive&&!w.retired;
+    if(status==="inactive")return !w.alive||w.retired;
+    return true;
+  }).sort((a,b)=>{
+    if(sort==="level")return b.level-a.level;
+    if(sort==="ovr")return ovr(b.stats)-ovr(a.stats);
+    if(sort==="age")return b.age-a.age;
+    return b.fame-a.fame;
+  });
+  const el=document.getElementById("warriors-list");
+  if(!el)return;
+  const activeCount=S.warriors.filter(w=>w.alive&&!w.retired).length;
+  const totalCount=S.warriors.length;
+  el.innerHTML=`<div style="font-size:11px;color:var(--txt3);margin-bottom:8px;font-family:'Cinzel',serif">${warriors.length} shown · ${activeCount} active · ${totalCount} all-time</div>`+
+  warriors.map(w=>{
+    const tier=tierOf(w.fame);
+    const statusTag=!w.alive?`<span class="tag" style="color:var(--red2)">⚰ Fallen</span>`:w.retired?`<span class="tag" style="color:var(--txt3)">Retired</span>`:`<span class="tag">Active</span>`;
+    return`<div class="hero-card ${tier}" onclick="openHeroModal(${w.id})">
+      <div class="row">
+        <div class="region-dot ${REGIONS[w.region].dot}"></div>
+        <span class="hero-name" style="${!w.alive?"text-decoration:line-through;opacity:.5":w.retired?"opacity:.6":""}">${w.name}</span>
+        <span class="spacer"></span>
+        <span class="badge badge-${tier}">${tierLabel(w.fame)}</span>
+      </div>
+      <div class="row" style="margin-top:4px">
+        <span class="hero-meta">${REGIONS[w.region].short} · ${w.cls} · Age ${w.age} · Lv ${w.level}</span>
+        <span class="spacer"></span>
+        <span class="hero-fame fame-${tier}">⚡ ${w.fame}</span>
+      </div>
+      <div class="row" style="margin-top:4px;gap:4px">
+        ${statusTag}
+        <span class="tag">OVR ${ovr(w.stats)}</span>
+        <span class="tag">${w.career.wins}W / ${w.career.fights}F</span>
+        ${w.career.grandTitles>0?`<span class="tag" style="color:var(--gold)">🏆 ×${w.career.grandTitles}</span>`:""}
+        ${w.career.regionalTitles>0?`<span class="tag" style="color:var(--french)">🎖 ×${w.career.regionalTitles}</span>`:""}
+      </div>
+    </div>`;
+  }).join("")||`<div class="empty">No heroes match this filter</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// HERO MODAL
+// ══════════════════════════════════════════════════════════════
+function openHeroModal(id){
+  const w=S.warriors.find(x=>x.id==id);if(!w)return;
+  const tier=tierOf(w.fame);
+  document.getElementById("modal-title").textContent=w.name;
+  document.getElementById("modal-body").innerHTML=`
+    <div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:12px">
+      <span class="badge badge-${tier}">${tierLabel(w.fame)}</span>
+      <span class="tag" style="color:${regionColor(w.region)}">${REGIONS[w.region].short}</span>
+      <span class="tag">${w.cls}</span>
+      <span class="tag">Age ${w.age}</span>
+      <span class="tag">Lv ${w.level}</span>
+      <span class="tag">${w.alive?(w.retired?"Retired":"Active"):"⚰ Fallen"}</span>
+    </div>
+    <div class="sec">STATS (OVR ${ovr(w.stats)})</div>
+    ${STAT_KEYS.map(k=>`<div class="stat-row"><span class="stat-lbl">${STAT_NAMES[k]}</span>
+      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${w.stats[k]}%"></div></div>
+      <span class="stat-val">${w.stats[k]}</span></div>`).join("")}
+    <div class="sec">FAME & CAREER</div>
+    <div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      <div class="card" style="flex:1;min-width:100px;text-align:center;margin:0">
+        <div style="font-family:'Cinzel',serif;font-size:20px;color:var(--gold)">${w.fame}</div>
+        <div style="font-size:11px;color:var(--txt3)">Fame</div>
+      </div>
+      <div class="card" style="flex:1;min-width:100px;text-align:center;margin:0">
+        <div style="font-family:'Cinzel',serif;font-size:20px;color:var(--gold2)">${w.career.wins}/${w.career.fights}</div>
+        <div style="font-size:11px;color:var(--txt3)">Wins/Fights</div>
+      </div>
+      <div class="card" style="flex:1;min-width:100px;text-align:center;margin:0">
+        <div style="font-family:'Cinzel',serif;font-size:20px;color:var(--gold)">${w.career.grandTitles}</div>
+        <div style="font-size:11px;color:var(--txt3)">Grand Titles</div>
+      </div>
+    </div>
+    <div class="sec">ARTIFACT SLOT</div>
+    <div class="artifact-slot">No artifact equipped — Coming in future update</div>
+    <div class="sec">SPECIAL SKILLS (${w.specialSkills?.length||0}/3)</div>
+    ${w.specialSkills?.length?w.specialSkills.map(s=>`<div class="skill-slot" style="border-color:var(--gold3);margin-bottom:6px">
+      <div style="font-family:'Cinzel',serif;font-size:12px;color:var(--gold2);margin-bottom:2px">✨ ${s.name}</div>
+      <div style="font-size:11px;color:var(--txt2)">${s.desc}</div>
+      <div style="font-size:10px;color:var(--txt3);margin-top:2px">Trigger: ${Math.round((s.triggerChance||0)*100)}% chance per turn</div>
+    </div>`).join(""):""}
+    ${(w.specialSkills?.length||0)<3?`<div class="skill-slot">Slot ${(w.specialSkills?.length||0)+1} — Empty (earned at level 15/25/35 or from 4★+ quests)</div>`:""}
+    ${(w.specialSkills?.length||0)<2?`<div class="skill-slot">Slot ${(w.specialSkills?.length||0)+2} — Empty</div>`:""}
+    <div class="sec">AGE & PROGRESSION</div>
+    <div class="card" style="margin:0;font-size:12px;color:var(--txt2)">
+      ${ageGrowthMult(w.age)<=0?`<span style="color:var(--red2)">⚠ Too old to gain XP. Stats declining each year.</span>`:
+        `Growth rate: <span style="color:var(--gold)">${Math.round(ageGrowthMult(w.age)*100)}%</span> (${w.age<=27?"Prime years":w.age<=32?"Experienced":w.age<=37?"Veteran — slowing":w.age<=39?"Late career":"Final years"})`}
+      <br>XP to next level: ${w.xp||0}/${xpToLevel(w.level)}
+    </div>
+    ${(()=>{
+      const yearLog=w.career.yearLog||[];
+      if(!yearLog.length)return'<div class="empty" style="font-size:12px">No career events recorded yet</div>';
+      const sorted=[...yearLog].sort((a,b)=>a.year-b.year);
+      return'<div class="sec">ANNUAL CAREER LOG</div>'+sorted.map(e=>{
+        const lines2=[];
+        if(e.event==="joined")lines2.push('<div style="color:var(--uncommon);font-size:12px">🌟 Joined the ranks</div>');
+        if(e.regional)lines2.push('<div style="font-size:12px;color:var(--txt2)">🏟 Regional: <span style="color:var(--gold2)">'+e.regional+'</span></div>');
+        if(e.worldTournament){const wc=e.worldTournament;lines2.push('<div style="font-size:12px;color:var(--txt2)">🏆 World: <span style="color:'+(wc.includes("Winner")?"var(--legendary)":wc.includes("Final")?"var(--gold)":wc.includes("Semi")?"var(--rare)":"var(--txt2)")+'">'+wc+'</span></div>');}
+        if(!e.worldTournament&&e.regional)lines2.push('<div style="font-size:12px;color:var(--txt3)">🏆 World Tournament: DNQ ❌</div>');
+        if(e.basicQuests)lines2.push('<div style="font-size:12px;color:var(--txt2)">📋 '+e.basicQuests+' basic quest'+(e.basicQuests>1?'s':'')+' completed</div>');
+        (e.specialQuests||[]).forEach(sq=>{const st='★'.repeat(sq.stars)+'☆'.repeat(5-sq.stars);lines2.push('<div style="font-size:12px;color:'+(sq.success?"var(--uncommon)":"var(--red2)")+'">🐉 '+st+' — '+sq.name+' '+(sq.success?'✅':'❌')+'</div>');});
+        if(e.event==="retired")lines2.push('<div style="color:var(--txt3);font-size:12px">🏅 Retired this year</div>');
+        if(!lines2.length)return'';
+        return'<div style="border-left:2px solid var(--bg4);padding:6px 10px;margin-bottom:8px"><div style="font-family:\'Cinzel\',serif;font-size:11px;color:var(--gold3);margin-bottom:4px">Year '+e.year+'</div>'+lines2.join('')+'</div>';
+      }).join('');
+    })()}
+  `;
+  document.getElementById("modal-overlay").classList.add("open");
+}
+function closeModal(){document.getElementById("modal-overlay").classList.remove("open");}
+
+// ══════════════════════════════════════════════════════════════
+// REGIONS TAB
+// ══════════════════════════════════════════════════════════════
+function renderRegions(){
+  const el=document.getElementById("regions-content");if(!el)return;
+  // Calculate stats per region from history
+  const regionStats={};
+  Object.keys(REGIONS).forEach(rid=>{regionStats[rid]={grandTitles:0,specialQuestsCompleted:0};});
+  S.history.forEach(h=>{
+    if(h.championRegion&&regionStats[h.championRegion])regionStats[h.championRegion].grandTitles++;
+  });
+  S.warriors.forEach(w=>{
+    if(regionStats[w.region])(w.career.specialQuests||[]).filter(q=>q.success).forEach(()=>regionStats[w.region].specialQuestsCompleted++);
+  });
+
+  el.innerHTML=Object.keys(REGIONS).map(rid=>{
+    const reg=REGIONS[rid];
+    const active=S.warriors.filter(w=>w.region===rid&&w.alive&&!w.retired).sort((a,b)=>b.fame-a.fame);
+    const top3=active.slice(0,3);
+    const stats=regionStats[rid];
+    return`<div class="card">
+      <div style="border-left:3px solid ${regionColor(rid)};padding-left:10px;margin-bottom:8px">
+        <div style="font-family:'Cinzel',serif;font-size:15px;color:${regionColor(rid)};font-weight:700">${reg.name}</div>
+        <div style="font-size:12px;color:var(--txt2);font-style:italic">${reg.desc}</div>
+      </div>
+      <div class="row" style="gap:12px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--txt3)">${active.length} active warriors</span>
+        <span style="font-size:11px;color:var(--gold)">🏆 ${stats.grandTitles} grand title${stats.grandTitles!==1?"s":""}</span>
+        <span style="font-size:11px;color:var(--uncommon)">🐉 ${stats.specialQuestsCompleted} quest${stats.specialQuestsCompleted!==1?"s":""} completed</span>
+      </div>
+      <div class="sec" style="margin-top:0">TOP WARRIORS</div>
+      ${top3.map((w,i)=>`<div class="row" style="margin-bottom:4px;cursor:pointer" onclick="openHeroModal(${w.id})">
+        <span style="font-family:'Cinzel',serif;font-size:11px;color:var(--txt3);width:16px">${i+1}.</span>
+        <span style="font-size:13px;color:var(--gold2);font-family:'Cinzel',serif">${w.name}</span>
+        <span class="spacer"></span>
+        <span class="tag">${tierLabel(w.fame)}</span>
+        <span style="font-size:12px;color:var(--gold3);margin-left:4px">⚡${w.fame}</span>
+      </div>`).join("")||`<div style="color:var(--txt3);font-size:12px;font-style:italic">No warriors yet</div>`}
+    </div>`;
+  }).join("");
+}
+
+// ══════════════════════════════════════════════════════════════
+// HISTORY TAB
+// ══════════════════════════════════════════════════════════════
+function switchHistSub(sub){
+  ["tourn","quests","heroes"].forEach(s=>{
+    document.getElementById("hist-"+s).style.display=s===sub?"":"none";
+    document.getElementById("hsub-"+s).classList.toggle("btn-gold",s===sub);
+  });
+  if(sub==="heroes")renderHeroHistory();
+  if(sub==="quests")renderQuestHistory();
+}
+
+function renderHistory(){
+  const el=document.getElementById("hist-tourn");if(!el)return;
+  if(!S.history.length){el.innerHTML=`<div class="empty">No tournaments held yet</div>`;return;}
+  el.innerHTML=S.history.map(h=>{
+    // champion may be stored as string name or object
+    const champName=typeof h.champion==="string"?h.champion:h.champion?.name||"Unknown";
+    const champRegion=h.championRegion||h.champion?.region;
+    const champRegionShort=REGIONS[champRegion]?.short||champRegion||"";
+    return`<div class="card">
+      <div class="row"><div style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold3)">Year ${h.year}</div></div>
+      <div style="font-family:'Cinzel',serif;font-size:16px;color:var(--gold2);margin-top:4px">🏆 ${champName}</div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:2px">${champRegionShort}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderQuestHistory(){
+  const el=document.getElementById("hist-quests");
+  const allSQ=S.history.flatMap(h=>(h.specialQuests||[]).map(q=>({...q,year:h.year})));
+  if(!allSQ.length){el.innerHTML=`<div class="empty">No special quests recorded yet</div>`;return;}
+  el.innerHTML=allSQ.map(q=>`<div class="card">
+    <div class="row"><div>${fmtStar(q.quest.stars)}</div><span style="font-size:12px;color:var(--gold2);flex:1;margin-left:8px">${q.quest.name}</span></div>
+    <div class="row" style="margin-top:6px">
+      <span style="font-size:12px;color:var(--txt2)">Year ${q.year} · ${q.hero.name}</span>
+      <span class="spacer"></span>
+      <span class="badge badge-${q.success?"uncommon":q.died?"common":"common"}">${q.died?"FALLEN":q.success?"SUCCESS":"DEFEAT"}</span>
+    </div>
+  </div>`).join("");
+}
+
+function renderHeroHistory(){
+  const el=document.getElementById("hist-heroes");
+  const active=S.warriors.sort((a,b)=>b.fame-a.fame);
+  el.innerHTML=`<div class="sec">SELECT A HERO</div>`+
+    active.slice(0,20).map(w=>`<div class="hero-card ${tierOf(w.fame)}" onclick="showHeroHistory(${w.id})">
+      <div class="row"><span class="hero-name">${w.name}</span><span class="badge badge-${tierOf(w.fame)}">${tierLabel(w.fame)}</span></div>
+      <div class="hero-meta">${REGIONS[w.region]?.short||w.region} · ${w.cls} · ${w.alive?(w.retired?"Retired":"Active"):"Fallen"}</div>
+    </div>`).join("");
+}
+
+function showHeroHistory(id){
+  const w=S.warriors.find(x=>x.id==id);if(!w)return;openHeroModal(id);
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+  // Restore quest screen if returning to current year mid-quests
+  if(tab==="current"&&S.sqRunning){
+    document.getElementById("panel-current").classList.add("active");
+    const tabs=["current","warriors","regions","history"];
+    document.querySelectorAll(".nav-tab")[tabs.indexOf(tab)]?.classList.add("active");
+    renderSpecialQuestScreen();
+    return;
+  }
+  document.getElementById("panel-"+tab).classList.add("active");
+  const tabs=["current","warriors","regions","history"];
+  document.querySelectorAll(".nav-tab")[tabs.indexOf(tab)]?.classList.add("active");
+  if(tab==="warriors")renderWarriors();
+  if(tab==="regions")renderRegions();
+  if(tab==="history")renderHistory();
+  if(tab==="current")restoreCurrentView();
+}
+
+function restoreCurrentView(){
+  // Always sync button state
+  syncButton();
+  // If special quests are running, re-render the current quest
+  if(S.sqRunning){
+    // Re-render current quest screen (sqIdx not incremented yet)
+    if(sqIdx<sqQueue.length) renderSpecialQuestScreen();
+    else renderCurrentYear();
+    return;
+  }
+  // If tournament is mid-flight, restore it
+  if(S.phase==="tournament"&&tournamentState.phase!=="idle"&&tournamentState.phase!=="complete"){
+    renderTournamentPhase();
+    return;
+  }
+  // Otherwise just re-render current year (steps + content)
+  renderCurrentYear();
+}
+
+function syncButton(){
+  const btn=document.getElementById("btn-advance");
+  if(!btn)return;
+  if(S.sqRunning){
+    btn.style.display="";
+    btn.textContent="▶ Continue Special Quests";
+    btn.onclick=()=>{
+      // Re-show the current quest
+      if(sqIdx<sqQueue.length) renderSpecialQuestScreen();
+    };
+    return;
+  }
+  if(S.phase==="start"){btn.style.display="";btn.textContent="▶ Begin Year "+S.year;btn.onclick=advancePhase;}
+  else if(S.phase==="training"){btn.style.display="";btn.textContent="▶ Run Training";btn.onclick=advancePhase;}
+  else if(S.phase==="regional"){btn.style.display="";btn.textContent="▶ Run Regionals";btn.onclick=advancePhase;}
+  else if(S.phase==="basic_quests"){btn.style.display="";btn.textContent="▶ Run Basic Quests";btn.onclick=advancePhase;}
+  else if(S.phase==="special_quests"&&!S.sqRunning){btn.style.display="";btn.textContent="▶ Begin Special Quests";btn.onclick=startSpecialQuests;}
+  else if(S.phase==="tournament"&&tournamentState.phase==="idle"){btn.style.display="";btn.textContent="▶ Begin Grand Tournament";btn.onclick=startGrandTournament;}
+  else if(S.phase==="year_end"){btn.style.display="";btn.textContent="▶ Begin Year "+(S.year+1);btn.onclick=endYear;}
+  else btn.style.display="none";
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+// ── SETTINGS ─────────────────────────────────────────────────
+let _confirmCallback=null;
+function showConfirm(icon,title,msg,okLabel,okStyle,cb){
+  document.getElementById("confirm-icon").textContent=icon;
+  document.getElementById("confirm-title").textContent=title;
+  document.getElementById("confirm-msg").textContent=msg;
+  const btn=document.getElementById("confirm-ok-btn");
+  btn.textContent=okLabel;btn.style.cssText=okStyle||"";
+  _confirmCallback=cb;
+  document.getElementById("confirm-overlay").style.display="flex";
+}
+function confirmOk(){document.getElementById("confirm-overlay").style.display="none";if(_confirmCallback){const cb=_confirmCallback;_confirmCallback=null;cb();}}
+function confirmCancel(){document.getElementById("confirm-overlay").style.display="none";_confirmCallback=null;}
+
+function openSettings(){document.getElementById("settings-overlay").style.display="flex";}
+function closeSettings(){document.getElementById("settings-overlay").style.display="none";}
+function restartYear(){
+  closeSettings();
+  showConfirm("🔄","Restart Current Year?","All progress this year will be lost. Warriors keep their stats and fame.","Restart","background:var(--gold3);color:var(--bg);border-color:var(--gold)",()=>{
+    S.phase="start";
+    S.currentYearData={training:null,regional:null,basicQuests:null,specialQuests:null,tournament:null,newWarriors:null};
+    tournamentState={phase:"idle",participants:[],rumbleFighters:[],bracket:[],currentMatch:null,round:0,results:[],champion:null,rumbleRemaining:[]};
+    sqIdx=0;sqQueue=[];rumbleEliminated=new Set();
+    autoSave();
+    renderCurrentYear();
+    toast("Year "+S.year+" restarted.");
+  });
+}
+function clearAndReset(){
+  closeSettings();
+  showConfirm("💀","Reset Entire World?","All warriors, history and progress will be permanently deleted. This cannot be undone.","Delete Everything","background:var(--red);color:white;border-color:var(--red)",()=>{
+    clearSave();
+    location.reload();
+  });
+}
+function toast(msg){
+  let t=document.getElementById("toast-msg");
+  if(!t){t=document.createElement("div");t.id="toast-msg";t.style.cssText="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--gold3);color:var(--gold);font-family:'Cinzel',serif;font-size:12px;padding:8px 18px;border-radius:20px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none";document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity="1";
+  clearTimeout(t._to);t._to=setTimeout(()=>{t.style.opacity="0";},2800);
+}
+
+// ── IndexedDB Save System ────────────────────────────────────
+const DB_NAME='toc',DB_VER=1,DB_STORE='saves',AUTO_KEY='autosave';
+let _db=null;
+function getDB(){
+  if(_db)return Promise.resolve(_db);
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=e=>{e.target.result.createObjectStore(DB_STORE,{keyPath:'key'});};
+    req.onsuccess=e=>{_db=e.target.result;res(_db);};
+    req.onerror=()=>rej(req.error);
+  });
+}
+function dbPut(key,data){return getDB().then(db=>new Promise((res,rej)=>{
+  const tx=db.transaction(DB_STORE,'readwrite');
+  tx.objectStore(DB_STORE).put({key,data});
+  tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error);
+}));}
+function dbGet(key){return getDB().then(db=>new Promise((res,rej)=>{
+  const tx=db.transaction(DB_STORE,'readonly');
+  const req=tx.objectStore(DB_STORE).get(key);
+  req.onsuccess=()=>res(req.result?.data||null);req.onerror=()=>rej(req.error);
+}));}
+function dbDelete(key){return getDB().then(db=>new Promise((res,rej)=>{
+  const tx=db.transaction(DB_STORE,'readwrite');
+  tx.objectStore(DB_STORE).delete(key);
+  tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error);
+}));}
+function dbAll(){return getDB().then(db=>new Promise((res,rej)=>{
+  const tx=db.transaction(DB_STORE,'readonly');
+  const req=tx.objectStore(DB_STORE).getAll();
+  req.onsuccess=()=>res(req.result||[]);req.onerror=()=>rej(req.error);
+}));}
+
+function buildSave(){
+  return{S:JSON.parse(JSON.stringify(S)),sqIdx,sqQueue,warriors:JSON.parse(JSON.stringify(S.warriors)),savedAt:Date.now()};
+}
+function autoSave(){
+  const data=buildSave();
+  dbPut(AUTO_KEY,data).then(()=>updateSavedStamp()).catch(()=>{});
+}
+function updateSavedStamp(){
+  const el=document.getElementById("last-saved");
+  if(el)el.textContent="Saved "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+}
+function loadSave(){
+  return dbGet(AUTO_KEY).then(d=>{
+    if(!d)return false;
+    if(d.S){
+      Object.assign(S,d.S);
+      // Restore warriors array (may have more data than S.warriors)
+      if(d.warriors)S.warriors=d.warriors;
+    }
+    if(d.sqIdx!=null)sqIdx=d.sqIdx;
+    if(d.sqQueue)sqQueue=d.sqQueue;
+    return true;
+  }).catch(()=>false);
+}
+function clearSave(){dbDelete(AUTO_KEY).catch(()=>{});}
+
+// Named save slots
+function saveNamedSlot(name){
+  const key="slot__"+name.replace(/[^a-zA-Z0-9 \-_#]/g,"_");
+  const data=buildSave();
+  data.slotName=name;data.key=key;
+  return dbPut(key,data).then(()=>toast("Saved: "+name));
+}
+function loadNamedSlot(key){
+  return dbGet(key).then(d=>{
+    if(!d)throw new Error("Not found");
+    Object.assign(S,d.S);
+    if(d.warriors)S.warriors=d.warriors;
+    if(d.sqIdx!=null)sqIdx=d.sqIdx;
+    if(d.sqQueue)sqQueue=d.sqQueue;
+    autoSave();
+  });
+}
+
+function init(){
+  // Register service worker for PWA
+  if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+  loadSave().then(loaded=>{
+    if(!loaded)initWorld();
+    document.getElementById("cur-year").textContent=S.year;
+    renderCurrentYear();
+    renderWarriors();
+    renderRegions();
+    renderHistory();
+    // If mid-quests, restore the quest screen
+    if(S.phase==="special_quests"&&S.sqRunning){
+      setTimeout(()=>renderSpecialQuestScreen(),100);
+    }
+  });
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "Tournament of Champions",
+  "short_name": "Tournament",
+  "description": "Medieval combat tournament sandbox — build legends, run quests, crown champions",
+  "start_url": "/tournament/",
+  "display": "standalone",
+  "background_color": "#0a0805",
+  "theme_color": "#0a0805",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
