@@ -291,6 +291,11 @@ table.training-table tr:hover td{background:var(--bg3)}
   <div style="background:var(--bg2);border:1px solid var(--gold3);border-radius:var(--R);width:220px;padding:4px 0;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
     <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold3);letter-spacing:.1em;padding:10px 16px 6px">SETTINGS</div>
     <div class="settings-item" onclick="restartYear()">🔄 Restart Current Year</div>
+    <div class="settings-divider"></div>
+    <div class="settings-item" onclick="exportSave()">📤 Export Save</div>
+    <div class="settings-item" onclick="document.getElementById('import-file').click()">📥 Import Save</div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importSave(event)">
+    <div class="settings-divider"></div>
     <div class="settings-item" onclick="clearAndReset()" style="color:var(--red2)">💀 Reset World</div>
     <div class="settings-divider"></div>
     <div class="settings-item" onclick="closeSettings()">✕ Close</div>
@@ -507,41 +512,41 @@ function applySkill(skill,attacker,defender,cs){
         const d=Math.max(1,Math.round(rawAtk*skill.power*0.3+rand(-3,5)));
         dmgDone+=d;
       }
-      msg=`✨ ${skill.name}: ${hits} hits for ${dmgDone} total damage!`;
+      msg=`${hits} hits for ${dmgDone} total damage`;
       break;}
     case"heavy_hit":case"lance_charge":case"ghost_hit":case"piercing_hit":case"swift_strike":{
       dmgDone=Math.max(2,Math.round(rawAtk*skill.power*0.35+rand(-3,6)));
-      msg=`✨ ${skill.name}: ${dmgDone} damage!`;
+      msg=`${dmgDone} damage`;
       break;}
     case"heal":case"divine_heal":{
       const maxHp=attacker===cs.a?cs.maxHpA:cs.maxHpB;
       const heal=Math.round(maxHp*skill.power);
       if(attacker===cs.a)cs.hpA=Math.min(cs.maxHpA,cs.hpA+heal);
       else cs.hpB=Math.min(cs.maxHpB,cs.hpB+heal);
-      msg=`💚 ${skill.name}: restored ${heal} HP!`;
+      msg=`restored ${heal} HP 💚`;
       break;}
     case"stamina_restore":{
       const restore=Math.round(attacker.stats.stamina*skill.power);
       if(attacker===cs.a)cs.stamA=Math.min(cs.a.stats.stamina,cs.stamA+restore);
       else cs.stamB=Math.min(cs.b.stats.stamina,cs.stamB+restore);
-      msg=`💙 ${skill.name}: +${restore} stamina!`;
+      msg=`+${restore} stamina 💙`;
       break;}
     case"freeze":case"blind":case"evade":{
       const dur=Array.isArray(skill.duration)?rand(skill.duration[0],skill.duration[1]):skill.duration||1;
       if(defender===cs.a)cs.frozenA=(cs.frozenA||0)+dur;
       else cs.frozenB=(cs.frozenB||0)+dur;
-      msg=`❄️ ${skill.name}: ${defender.name} frozen for ${dur} turn(s)!`;
+      msg=`${defender.name} frozen ${dur} turn(s) ❄️`;
       break;}
     case"shield":{
       if(attacker===cs.a)cs.shieldA={power:skill.power,turns:skill.duration||2};
       else cs.shieldB={power:skill.power,turns:skill.duration||2};
-      msg=`🛡 ${skill.name}: damage reduced ${Math.round(skill.power*100)}% for ${skill.duration} turns!`;
+      msg=`damage reduced ${Math.round(skill.power*100)}% for ${skill.duration} turns 🛡`;
       break;}
     case"poison":{
       if(defender===cs.a)cs.poisonA={dot:skill.dot,turns:skill.duration||3};
       else cs.poisonB={dot:skill.dot,turns:skill.duration||3};
       dmgDone=Math.max(1,Math.round(rawAtk*skill.power*0.3));
-      msg=`☠️ ${skill.name}: ${dmgDone} dmg + ${skill.dot}HP poison for ${skill.duration} turns!`;
+      msg=`${dmgDone} dmg + ${skill.dot}HP poison ☠️`;
       break;}
     case"low_hp_boost":{
       const curHp=attacker===cs.a?cs.hpA:cs.hpB;
@@ -549,29 +554,38 @@ function applySkill(skill,attacker,defender,cs){
       if(curHp/maxHp2<=skill.hpThreshold){
         if(attacker===cs.a)cs.boostA={power:skill.power,turns:skill.duration||2};
         else cs.boostB={power:skill.power,turns:skill.duration||2};
-        msg=`🔥 ${skill.name}: desperate power surge!`;
+        msg=`desperate power surge! 🔥`;
       }break;}
     case"full_boost":case"atk_boost":case"meditate":{
       if(attacker===cs.a)cs.boostA={power:skill.power,turns:skill.duration||2};
       else cs.boostB={power:skill.power,turns:skill.duration||2};
-      msg=`⚡ ${skill.name}: stats boosted ${Math.round(skill.power*100)}%!`;
+      msg=`stats boosted ${Math.round(skill.power*100)}% ⚡`;
       break;}
     default:
-      msg=`✨ ${skill.name} activates!`;
+      msg=`activated ✨`;
   }
   return{msg,dmgDone};
 }
 
 const TRAINING_TYPES=[
-  {name:"Solo Training",stars:1,desc:"Training alone, focused and disciplined",min:1,max:3},
-  {name:"Training with a Master",stars:2,desc:"An old master shares their wisdom",min:2,max:5},
-  {name:"Month in the Wilderness",stars:2,desc:"Survival and hardship forge the body",min:2,max:5},
-  {name:"Military Campaign",stars:2,desc:"Real combat is the greatest teacher",min:2,max:6},
-  {name:"Ancient Tome Study",stars:2,desc:"Forbidden knowledge unlocked",min:2,max:5},
-  {name:"Training with a Legend",stars:3,desc:"A legendary warrior shares their secrets",min:4,max:8},
-  {name:"Sacred Mountain Retreat",stars:3,desc:"The gods themselves guide your growth",min:5,max:10},
-  {name:"Trial by the Gods",stars:3,desc:"Divine intervention accelerates mastery",min:6,max:12}
+  {name:"Solo Training",stars:1,desc:"Training alone, focused and disciplined",min:1,max:3,xp:5,weight:35},
+  {name:"Training with a Master",stars:2,desc:"An old master shares their wisdom",min:2,max:5,xp:10,weight:25},
+  {name:"Month in the Wilderness",stars:2,desc:"Survival and hardship forge the body",min:2,max:5,xp:10,weight:20},
+  {name:"Military Campaign",stars:2,desc:"Real combat is the greatest teacher",min:2,max:6,xp:12,weight:10},
+  {name:"Ancient Tome Study",stars:2,desc:"Forbidden knowledge unlocked",min:2,max:5,xp:10,weight:5},
+  {name:"Training with a Legend",stars:3,desc:"A legendary warrior shares their secrets",min:4,max:8,xp:18,weight:3},
+  {name:"Sacred Mountain Retreat",stars:3,desc:"The gods themselves guide your growth",min:5,max:10,xp:20,weight:1},
+  {name:"Trial by the Gods",stars:3,desc:"Divine intervention accelerates mastery",min:6,max:12,xp:25,weight:0.5},
+  {name:"Ancient Dragon's Trial",stars:4,desc:"A dragon's challenge pushes the warrior beyond all limits",min:10,max:18,xp:35,weight:0.3},
+  {name:"Blessing of the Ancients",stars:4,desc:"The ancient spirits bestow their power",min:12,max:20,xp:40,weight:0.15},
+  {name:"Trial of the Immortals",stars:5,desc:"A once-in-a-generation event. The warrior transcends mortal limits",min:18,max:30,xp:60,weight:0.05}
 ];
+function pickTraining(){
+  const total=TRAINING_TYPES.reduce((s,t)=>s+t.weight,0);
+  let r=Math.random()*total;
+  for(const t of TRAINING_TYPES){r-=t.weight;if(r<=0)return t;}
+  return TRAINING_TYPES[0];
+}
 
 const STAT_NAMES={strength:"Strength",magic:"Magic",endurance:"Endurance",intelligence:"Intelligence",attackSkill:"Attack Skill",defenseSkill:"Defense Skill",speed:"Speed",stamina:"Stamina"};
 const STAT_KEYS=Object.keys(STAT_NAMES);
@@ -679,35 +693,43 @@ function regionColor(rid){return`var(--${rid==="conq"?"conq":rid==="french"?"fre
 
 function generateWarrior(regionId,isRookie=false){
   const reg=REGIONS[regionId];
-  const clsPool=[...reg.classes,"priest"];// add priest to every region
+  const clsPool=[...reg.classes,"priest"];
   const cls=pick(clsPool);
-  const w={};
   const weights=CLASS_WEIGHTS[cls]||CLASS_WEIGHTS.warrior;
-  const baseLow=isRookie?10:20;
-  const baseHigh=isRookie?30:55;
+  const w={};
+  // Start all warriors from a rookie base — then apply level gains on top
   STAT_KEYS.forEach(k=>{
-    const wt=weights[k];
-    const base=rand(baseLow,baseHigh);
-    w[k]=clamp(base+wt*rand(0,5),1,100);
+    const wt=weights[k]||0;
+    const base=rand(12,28);// same starting point for all
+    w[k]=clamp(base+wt*rand(0,3),1,60);
   });
   const fn=pick(reg.firstNames),ln=pick(reg.lastNames);
   const epithet=Math.random()<0.4?pick(reg.epithets):null;
   const baseName=epithet?`${fn} ${ln}, ${epithet}`:`${fn} ${ln}`;
   const level=isRookie?1:rand(2,8);
   const warrior={
-    id:S.nextId++,baseName,name:baseName,region:regionId,cls,
+    id:(S.nextId=S.nextId||1,S.nextId++),baseName,name:baseName,region:regionId,cls,
     age:isRookie?rand(17,22):rand(22,34),
-    level,xp:0,fame:isRookie?0:rand(0,80),
+    level:1,xp:0,fame:isRookie?0:rand(0,60),
     alive:true,retired:false,
     stats:w,
-    career:{tournaments:[],quests:[],specialQuests:[],regionalTitles:0,grandTitles:0,fights:0,wins:0},
+    career:{tournaments:[],quests:[],specialQuests:[],yearLog:[],regionalTitles:0,grandTitles:0,fights:0,wins:0},
     artifact:null,specialSkills:[]
   };
-  // Apply title
+  // Apply stat gains for each level above 1 — guarantees higher levels have higher stats
+  const wtTotal=Object.values(weights).reduce((a,b)=>a+b,0);
+  for(let lv=1;lv<level;lv++){
+    const pts=rand(3,5);// 3-5 stat points per level gained
+    for(let i=0;i<pts;i++){
+      let r=Math.random()*wtTotal;
+      for(const k of STAT_KEYS){r-=weights[k]||0;if(r<=0){warrior.stats[k]=clamp(warrior.stats[k]+1,1,100);break;}}
+    }
+    warrior.level++;
+    if(warrior.level===15||warrior.level===25||warrior.level===35)awardSkill(warrior,false);
+  }
   warrior.name=displayName(warrior);
-  // Award initial skills to experienced warriors
-  if(!isRookie&&level>=5&&Math.random()<0.5)awardSkill(warrior,false);
-  if(!isRookie&&level>=8&&Math.random()<0.3)awardSkill(warrior,false);
+  if(!isRookie&&warrior.level>=5&&Math.random()<0.5)awardSkill(warrior,false);
+  if(!isRookie&&warrior.level>=8&&Math.random()<0.3)awardSkill(warrior,false);
   return warrior;
 }
 
@@ -806,7 +828,7 @@ function announceNewWarriors(){
   const GLOBAL_CAP=55;
   const TARGET_PER_REGION=7;
   Object.keys(REGIONS).forEach(rid=>{
-    const totalActive=S.warriors.filter(w=>w.alive&&!w.retired).length;
+    const totalActive=S.warriors.filter(w=>w.alive&&!w.retired).length;// recalc each region
     if(totalActive>=GLOBAL_CAP)return;
     const regionActive=S.warriors.filter(w=>w.region===rid&&w.alive&&!w.retired).length;
     const needed=Math.max(0,TARGET_PER_REGION-regionActive);
@@ -825,13 +847,12 @@ function announceNewWarriors(){
 // TRAINING
 // ══════════════════════════════════════════════════════════════
 function runTraining(){
-  levelUpLog=[];// reset at start of each year's training
+  levelUpLog=[];
   const active=S.warriors.filter(w=>w.alive&&!w.retired);
   const results=[];
   active.forEach(w=>{
-    const t=pick(TRAINING_TYPES);
-    // Focus stat weighted by class
-    const wts=CLASS_WEIGHTS[w.cls];
+    const t=pickTraining();
+    const wts=CLASS_WEIGHTS[w.cls]||CLASS_WEIGHTS.warrior;
     const pool=[];
     STAT_KEYS.forEach(k=>{for(let i=0;i<(wts[k]||1);i++)pool.push(k);});
     const stat=pick(pool);
@@ -839,7 +860,10 @@ function runTraining(){
     const oldVal=w.stats[stat];
     w.stats[stat]=clamp(w.stats[stat]+gain,1,100);
     const actual=w.stats[stat]-oldVal;
-    results.push({warrior:w,training:t,stat,gain:actual,oldVal,newVal:w.stats[stat]});
+    // Grant XP proportional to stat gain and training stars
+    const xpGain=Math.round((t.xp||5)*(actual/t.max));
+    gainXPWithLog(w,xpGain);
+    results.push({warrior:w,training:t,stat,gain:actual,oldVal,newVal:w.stats[stat],xpGain});
   });
   S.currentYearData.training=results;
 }
@@ -1070,7 +1094,9 @@ function resolveSpecialQuest(heroId,questName,successChance,danger,stars,attempt
     xpGain=10;
     msg=`💀 ${hero.name} has fallen, never to return...`;
     cls="failure";
-    hero.alive=false;hero.diedInYear=S.year;
+    hero.alive=false;hero.diedInYear=S.year;hero.diedIn="quest";
+    hero.career.yearLog=hero.career.yearLog||[];
+    hero.career.yearLog.push({year:S.year,event:"died",how:"quest"});
     hero.fame=Math.max(0,hero.fame+fameChange);
     gainXPWithLog(hero,xpGain);
     hero.career.specialQuests.push({year:S.year,name:questName,success:false,died:true,fameChange,stars});
@@ -1185,11 +1211,12 @@ function gainXP(warrior,baseAmount){
     warrior.xp-=xpToLevel(warrior.level);
     warrior.level++;
     const wts=CLASS_WEIGHTS[warrior.cls]||CLASS_WEIGHTS.warrior;
-    const total=Object.values(wts).reduce((a,b)=>a+b,0);
-    const pts=Math.round(rand(3,6)*Math.min(1,mult));
-    for(let i=0;i<Math.max(1,pts);i++){
-      let r=Math.random()*total;
-      for(const k of STAT_KEYS){r-=wts[k];if(r<=0){warrior.stats[k]=clamp(warrior.stats[k]+1,1,100);break;}}
+    const wtTotal=Object.values(wts).reduce((a,b)=>a+b,0);
+    // 3-5 stat points per level, slightly more for younger warriors
+    const pts=mult>=1.2?rand(4,6):mult>=0.8?rand(3,5):rand(2,4);
+    for(let i=0;i<pts;i++){
+      let r=Math.random()*wtTotal;
+      for(const k of STAT_KEYS){r-=wts[k]||0;if(r<=0){warrior.stats[k]=clamp(warrior.stats[k]+1,1,100);break;}}
     }
     if(warrior.level===15||warrior.level===25||warrior.level===35)awardSkill(warrior,false);
     warrior.name=displayName(warrior);
@@ -1200,11 +1227,10 @@ function gainXPWithLog(warrior,baseAmount){
   const oldLevel=warrior.level;
   gainXP(warrior,baseAmount);
   for(let lv=oldLevel+1;lv<=warrior.level;lv++){
-    // Deduplicate — don't log the same warrior+level twice
     if(levelUpLog.some(e=>e.warrior.id===warrior.id&&e.level===lv))continue;
     const title=getTitlePrefix(lv).trim();
-    let msg=`⬆️ ${warrior.baseName} reached Level ${lv}!`;
-    if(title&&lv%10===0)msg+=` Now known as ${warrior.name}.`;
+    let msg=`⬆️ ${warrior.baseName} reached Level ${lv}!`;// lv IS the new level
+    if(title&&lv%10===0)msg+=` Now known as ${displayName({...warrior,level:lv})}.`;
     if(lv===15||lv===25||lv===35){
       const skill=warrior.specialSkills[warrior.specialSkills.length-1];
       if(skill)msg+=` Learned: ${skill.name}!`;
@@ -1374,7 +1400,7 @@ function runBracketMatch(){
     match.loser.fame+=rand(5,10);match.loser.career.fights++;
     gainXPWithLog(match.winner,20);gainXPWithLog(match.loser,8);autoSave();
     // Small death chance for loser
-    if(Math.random()<0.06){match.loser.alive=false;match.loser.diedInYear=S.year;}
+    if(Math.random()<0.06){match.loser.alive=false;match.loser.diedInYear=S.year;match.loser.career.yearLog=match.loser.career.yearLog||[];match.loser.career.yearLog.push({year:S.year,event:"died",how:"combat"});}
     tournamentState.currentMatch++;
     if(tournamentState.currentMatch>=round.matches.length) advanceBracketRound();
     const nextBtn=document.createElement("button");
@@ -1630,7 +1656,7 @@ function runNextTurn(){
       if(first.specialSkills?.length&&Math.random()<0.5){
         const skill=pick(first.specialSkills);
         const result=applySkill(skill,first,second,cs);
-        if(result){if(result.dmgDone>0){if(first===cs.a)cs.hpB-=result.dmgDone;else cs.hpA-=result.dmgDone;}addLogLine(result.msg,"special");}
+        if(result){if(result.dmgDone>0){if(first===cs.a)cs.hpB-=result.dmgDone;else cs.hpA-=result.dmgDone;}addLogLine(`${first.name} uses ${skill.name}: ${result.msg}`,"special");}
       }
     }
   }
@@ -1653,7 +1679,7 @@ function runNextTurn(){
       if(second.specialSkills?.length&&Math.random()<0.5){
         const skill=pick(second.specialSkills);
         const result=applySkill(skill,second,first,cs);
-        if(result){if(result.dmgDone>0){if(second===cs.a)cs.hpB-=result.dmgDone;else cs.hpA-=result.dmgDone;}addLogLine(result.msg,"special");}
+        if(result){if(result.dmgDone>0){if(second===cs.a)cs.hpB-=result.dmgDone;else cs.hpA-=result.dmgDone;}addLogLine(`${second.name} uses ${skill.name}: ${result.msg}`,"special");}
       }
     }
   }
@@ -1791,7 +1817,7 @@ function renderTrainingTable(container){
   container.innerHTML=`<div class="sec">TRAINING RESULTS — sorted by gain</div>
     <div style="overflow-x:auto">
     <table class="training-table">
-      <thead><tr><th>Warrior</th><th>Region</th><th>Training</th><th>Stars</th><th>Stat</th><th>Before</th><th>After</th><th>+Gain</th></tr></thead>
+      <thead><tr><th>Warrior</th><th>Region</th><th>Training</th><th>Stars</th><th>Stat</th><th>Before</th><th>After</th><th>+Gain</th><th>XP</th></tr></thead>
       <tbody>${data.map((d,i)=>`<tr style="${i===0?"background:rgba(201,168,76,0.06)":""}">
         <td style="color:var(--gold2);font-family:'Cinzel',serif;font-size:11px;cursor:pointer" onclick="openHeroModal(${d.warrior.id})">${d.warrior.name}</td>
         <td style="color:${regionColor(d.warrior.region)};font-size:11px">${REGIONS[d.warrior.region].short}</td>
@@ -1800,7 +1826,8 @@ function renderTrainingTable(container){
         <td style="font-size:11px;color:var(--txt2)">${STAT_NAMES[d.stat]}</td>
         <td style="font-size:12px;text-align:center;color:var(--txt3)">${d.oldVal}</td>
         <td style="font-size:12px;text-align:center;color:var(--gold2)">${d.newVal}</td>
-        <td class="plus-green" style="font-size:${i===0?"15":"12"}px;font-weight:${i===0?700:400}">+${d.gain}</td>
+        <td class="plus-green" style="font-size:${i===0?"15":"12"}px;font-weight:${i===0?700:400}">+${d.gain}</td><td style="font-size:11px;color:var(--txt3)">+${d.xpGain||0}</td>
+        <td style="font-size:11px;color:var(--blue)">+${d.xpGain||0}</td>
       </tr>`).join("")}</tbody>
     </table></div>
     ${lvlEvents.length?`<div class="sec" style="margin-top:12px">⬆️ LEVEL-UP EVENTS</div>`+
@@ -1960,7 +1987,7 @@ function openHeroModal(id){
       <span class="tag">${w.cls}</span>
       <span class="tag">Age ${w.age}</span>
       <span class="tag">Lv ${w.level}</span>
-      <span class="tag">${w.alive?(w.retired?"Retired":"Active"):"⚰ Fallen"}</span>
+      <span class="tag">${w.alive?(w.retired?`Retired (Year ${w.retiredInYear||"?"})`:("Active · Age "+w.age)):(`⚰ Fallen Year ${w.diedInYear||"?"} · Age ${w.age}${w.diedIn?" · "+( w.diedIn==="quest"?"on a Quest":"in Tournament"):""}`)}</span>
     </div>
     <div class="sec">STATS (OVR ${ovr(w.stats)})</div>
     ${STAT_KEYS.map(k=>`<div class="stat-row"><span class="stat-lbl">${STAT_NAMES[k]}</span>
@@ -2010,6 +2037,7 @@ function openHeroModal(id){
         if(e.basicQuests)lines2.push('<div style="font-size:12px;color:var(--txt2)">📋 '+e.basicQuests+' basic quest'+(e.basicQuests>1?'s':'')+' completed</div>');
         (e.specialQuests||[]).forEach(sq=>{const st='★'.repeat(sq.stars)+'☆'.repeat(5-sq.stars);lines2.push('<div style="font-size:12px;color:'+(sq.success?"var(--uncommon)":"var(--red2)")+'">🐉 '+st+' — '+sq.name+' '+(sq.success?'✅':'❌')+'</div>');});
         if(e.event==="retired")lines2.push('<div style="color:var(--txt3);font-size:12px">🏅 Retired this year</div>');
+        if(e.event==="died")lines2.push('<div style="color:var(--red2);font-size:12px">⚰ Fell in '+( e.how==="quest"?"a special quest":"combat")+' — Year '+e.year+'</div>');
         if(!lines2.length)return'';
         return'<div style="border-left:2px solid var(--bg4);padding:6px 10px;margin-bottom:8px"><div style="font-family:\'Cinzel\',serif;font-size:11px;color:var(--gold3);margin-bottom:4px">Year '+e.year+'</div>'+lines2.join('')+'</div>';
       }).join('');
@@ -2198,7 +2226,44 @@ function showConfirm(icon,title,msg,okLabel,okStyle,cb){
 function confirmOk(){document.getElementById("confirm-overlay").style.display="none";if(_confirmCallback){const cb=_confirmCallback;_confirmCallback=null;cb();}}
 function confirmCancel(){document.getElementById("confirm-overlay").style.display="none";_confirmCallback=null;}
 
-function openSettings(){document.getElementById("settings-overlay").style.display="flex";}
+function exportSave(){
+  closeSettings();
+  const data=buildSave();
+  data.exportedAt=new Date().toISOString();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="questworld_save_year"+S.year+"_"+Date.now()+".json";
+  a.click();
+  toast("Save exported!");
+}
+function importSave(ev){
+  closeSettings();
+  const file=ev.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!d.S)throw new Error("Invalid save file");
+      Object.assign(S,d.S);
+      if(d.warriors)S.warriors=d.warriors;
+      if(d.sqIdx!=null)sqIdx=d.sqIdx;
+      if(d.sqQueue)sqQueue=d.sqQueue;
+      tournamentState={phase:"idle",participants:[],rumbleFighters:[],bracket:[],currentMatch:null,round:0,results:[],champion:null,rumbleRemaining:[]};
+      rumbleEliminated=new Set();
+      levelUpLog=[];
+      autoSave();
+      document.getElementById("cur-year").textContent=S.year;
+      renderCurrentYear();
+      renderWarriors();
+      renderRegions();
+      renderHistory();
+      toast("Save imported! Year "+S.year);
+    }catch(err){toast("Import failed: "+err.message);}
+  };
+  r.readAsText(file);
+  ev.target.value="";
+}
 function closeSettings(){document.getElementById("settings-overlay").style.display="none";}
 function restartYear(){
   closeSettings();
