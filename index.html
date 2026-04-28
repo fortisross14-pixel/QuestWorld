@@ -590,11 +590,23 @@ function pickTraining(){
 const STAT_NAMES={strength:"Strength",magic:"Magic",endurance:"Endurance",intelligence:"Intelligence",attackSkill:"Attack Skill",defenseSkill:"Defense Skill",speed:"Speed",stamina:"Stamina"};
 const STAT_KEYS=Object.keys(STAT_NAMES);
 const CLASS_WEIGHTS={
-  warrior:{strength:3,magic:0,endurance:3,intelligence:1,attackSkill:3,defenseSkill:2,speed:1,stamina:2},
-  mage:{strength:0,magic:3,endurance:1,intelligence:3,attackSkill:1,defenseSkill:1,speed:1,stamina:2},
-  ranged:{strength:1,magic:1,endurance:1,intelligence:2,attackSkill:3,defenseSkill:1,speed:3,stamina:2},
-  stealth:{strength:1,magic:1,endurance:1,intelligence:3,attackSkill:2,defenseSkill:2,speed:3,stamina:1},
-  priest:{strength:0,magic:2,endurance:2,intelligence:3,attackSkill:1,defenseSkill:2,speed:1,stamina:3}
+  warrior:{strength:4,magic:0,endurance:3,intelligence:1,attackSkill:3,defenseSkill:2,speed:1,stamina:2},
+  mage:{strength:0,magic:4,endurance:1,intelligence:3,attackSkill:1,defenseSkill:1,speed:1,stamina:2},
+  ranged:{strength:1,magic:0,endurance:1,intelligence:2,attackSkill:4,defenseSkill:2,speed:3,stamina:2},
+  stealth:{strength:1,magic:1,endurance:1,intelligence:4,attackSkill:2,defenseSkill:2,speed:3,stamina:1},
+  priest:{strength:0,magic:2,endurance:3,intelligence:3,attackSkill:1,defenseSkill:2,speed:1,stamina:4}
+};
+// Which stat is the PRIMARY for each class (starts boosted)
+const CLASS_PRIMARY={
+  warrior:"strength",mage:"magic",ranged:"attackSkill",stealth:"intelligence",priest:"stamina"
+};
+// Secondary stats that also start decent
+const CLASS_SECONDARY={
+  warrior:["endurance","attackSkill"],
+  mage:["intelligence"],
+  ranged:["speed","defenseSkill"],
+  stealth:["speed","attackSkill"],
+  priest:["endurance","intelligence"]
 };
 
 // Titles by level
@@ -688,7 +700,7 @@ function tierLabel(fame){return{legendary:"Legendary",epic:"Epic",rare:"Rare",un
 function ovr(stats){return Math.round(Object.values(stats).reduce((a,b)=>a+b,0)/8);}
 function stars(n){return "★".repeat(n)+"☆".repeat(5-n);}
 function fmtStar(n){return`<span class="star-gold">${"★".repeat(n)}</span><span style="color:var(--txt3)">${"☆".repeat(5-n)}</span>`;}
-function xpToLevel(lvl){return Math.round(20+(lvl-1)*15);}
+function xpToLevel(lvl){return Math.round(15+Math.pow(lvl-1,1.8)*8);}
 function regionColor(rid){return`var(--${rid==="conq"?"conq":rid==="french"?"french":rid==="viking"?"viking":rid==="sahel"?"sahel":rid==="arabic"?"arabic":"samurai"})`;}
 
 function generateWarrior(regionId,isRookie=false){
@@ -722,7 +734,7 @@ function generateWarrior(regionId,isRookie=false){
     const pts=rand(3,5);// 3-5 stat points per level gained
     for(let i=0;i<pts;i++){
       let r=Math.random()*wtTotal;
-      for(const k of STAT_KEYS){r-=weights[k]||0;if(r<=0){warrior.stats[k]=clamp(warrior.stats[k]+1,1,100);break;}}
+      for(const k of STAT_KEYS){r-=weights[k]||0;if(r<=0){warrior.stats[k]=clamp(warrior.stats[k]+1,1,150);break;}}
     }
     warrior.level++;
     if(warrior.level===15||warrior.level===25||warrior.level===35)awardSkill(warrior,false);
@@ -858,7 +870,7 @@ function runTraining(){
     const stat=pick(pool);
     const gain=rand(t.min,t.max);
     const oldVal=w.stats[stat];
-    w.stats[stat]=clamp(w.stats[stat]+gain,1,100);
+    w.stats[stat]=clamp(w.stats[stat]+gain,1,150);
     const actual=w.stats[stat]-oldVal;
     // Grant XP proportional to stat gain and training stars
     const xpGain=Math.round((t.xp||5)*(actual/t.max));
@@ -937,7 +949,7 @@ function runBasicQuests(){
     const hero=active[i%active.length];
     const fame=rand(3,12);
     hero.fame+=fame;
-    gainXPWithLog(hero,8);
+    gainXPWithLog(hero,rand(6,12));
     hero.career.quests.push({year:S.year,name:q,fame});
     const bqEntry=hero.career.yearLog?.find(e=>e.year===S.year);
     if(bqEntry){bqEntry.basicQuests=(bqEntry.basicQuests||0)+1;}
@@ -1018,7 +1030,7 @@ function renderSpecialQuestScreen(){
           <div class="sec" style="margin:0 0 6px">HERO STATS</div>
           ${STAT_KEYS.slice(0,4).map(k=>`
             <div class="stat-row"><span class="stat-lbl">${STAT_NAMES[k]}</span>
-            <div class="stat-bar-wrap"><div class="stat-bar" style="width:${hero.stats[k]}%"></div></div>
+            <div class="stat-bar-wrap"><div class="stat-bar" style="width:${Math.min(100,hero.stats[k]/1.5)}%"></div></div>
             <span class="stat-val">${hero.stats[k]}</span></div>`).join("")}
         </div>
         <div style="flex:1;min-width:140px">
@@ -1210,14 +1222,15 @@ function gainXP(warrior,baseAmount){
   while(warrior.xp>=xpToLevel(warrior.level)&&warrior.level<30){
     warrior.xp-=xpToLevel(warrior.level);
     warrior.level++;
-    const wts=CLASS_WEIGHTS[warrior.cls]||CLASS_WEIGHTS.warrior;
-    const wtTotal=Object.values(wts).reduce((a,b)=>a+b,0);
-    // 3-5 stat points per level, slightly more for younger warriors
-    const pts=mult>=1.2?rand(4,6):mult>=0.8?rand(3,5):rand(2,4);
-    for(let i=0;i<pts;i++){
-      let r=Math.random()*wtTotal;
-      for(const k of STAT_KEYS){r-=wts[k]||0;if(r<=0){warrior.stats[k]=clamp(warrior.stats[k]+1,1,100);break;}}
-    }
+    const primary=CLASS_PRIMARY[warrior.cls];
+    const secondary=CLASS_SECONDARY[warrior.cls]||[];
+    const ageMult=mult>=1.2?1:mult>=0.8?0.8:0.6;
+    // Each stat gets 1-2 points, primary gets 2-3, secondary 1-2
+    STAT_KEYS.forEach(k=>{
+      const base=k===primary?rand(2,3):secondary.includes(k)?rand(1,2):rand(0,1);
+      const gain=Math.round(base*ageMult);
+      if(gain>0)warrior.stats[k]=clamp(warrior.stats[k]+gain,1,150);
+    });
     if(warrior.level===15||warrior.level===25||warrior.level===35)awardSkill(warrior,false);
     warrior.name=displayName(warrior);
   }
@@ -1991,7 +2004,7 @@ function openHeroModal(id){
     </div>
     <div class="sec">STATS (OVR ${ovr(w.stats)})</div>
     ${STAT_KEYS.map(k=>`<div class="stat-row"><span class="stat-lbl">${STAT_NAMES[k]}</span>
-      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${w.stats[k]}%"></div></div>
+      <div class="stat-bar-wrap"><div class="stat-bar" style="width:${Math.min(100,w.stats[k]/1.5)}%"></div></div>
       <span class="stat-val">${w.stats[k]}</span></div>`).join("")}
     <div class="sec">FAME & CAREER</div>
     <div class="row" style="flex-wrap:wrap;gap:6px;margin-bottom:10px">
