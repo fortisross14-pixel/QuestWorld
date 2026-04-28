@@ -1,4 +1,4 @@
-const CACHE='toc-v3';
+const CACHE='toc-v5';
 const ASSETS=['/QuestWorld/','/QuestWorld/index.html','/QuestWorld/manifest.json','/QuestWorld/icon-192.png','/QuestWorld/icon-512.png'];
 
 self.addEventListener('install',e=>{
@@ -14,7 +14,8 @@ self.addEventListener('activate',e=>{
 });
 
 self.addEventListener('fetch',e=>{
+  // Network first, fall back to cache — ensures latest code always loads
   e.respondWith(
-    caches.match(e.request).then(r=>r||fetch(e.request))
+    fetch(e.request).catch(()=>caches.match(e.request))
   );
 });
